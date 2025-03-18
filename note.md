@@ -100,3 +100,18 @@ ng g c shopping-list/shopping-edit
 
 make this component not standalone (i.e. remove the lines standalone: true and imports from these components ts)
 Finally update the _declarations_ array (i.e. declare the created components in that array)
+
+# shortcuts
+
+use
+ 
+```
+nav.navbar.navbar-default
+```
+to generate
+
+```
+<nav class="navbar navbar-default">
+    
+</nav>
+```
