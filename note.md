@@ -70,3 +70,33 @@ Then to check if bootstrap is working we can modify our app.component.html as fo
 ```
 
 then run the application and check the style from the web-developper tools.
+
+
+# roaddmap
+
+HeaderComponent (navigation)
+
+ShoppingListComponent         
+ShoppingEditComponent      
+
+RecipesComponent 
+RecipeListComponent
+RecipeDetailComponent
+RecipeItemComponent
+
+
+First we create the HeaderComponent manually and update the _declarations_ array in the app.module
+
+Then we create the other components using Angular CLI:
+```
+ng g c recipes
+ng g c recipes/recipe-list
+ng g c recipes/recipe-detail
+ng g c recipes/recipe-list/recipe-item
+
+ng g c shopping-list
+ng g c shopping-list/shopping-edit
+```
+
+make this component not standalone (i.e. remove the lines standalone: true and imports from these components ts files)
+Finally update the _declarations_ array (i.e. declare the created components in that array)
