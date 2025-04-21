@@ -1872,3 +1872,128 @@ export class AppModule { }
 
 When the application first starts it redirects to http://localhost:4200/recipes
 You can then enter the url http://localhost:4200/shopping-list to go to the Shopping list
+
+# Cleanup before adding navigation to the App
+
+## The HeaderComponent
+
+Let's consider the header.component.html:
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="#" (click)="onSelect('recipes')">Recipes</a></li>
+                <li><a href="#" (click)="onSelect('shoppingList')">Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a href="#" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Save Data</a></li>
+                        <li><a href="#">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+We no longer need the _click_ listeners so our _li_ tag becomes:
+```
+<li><a href="#">Recipes</a></li>
+<li><a href="#">Shopping List</a></li>
+```
+
+We don't need the _href="#"_ in these _a_ tags as when present, a click on the link will
+send a request to the server and reload the page. Our _li_ tags reduce to:
+```
+<li><a>Recipes</a></li>
+<li><a>Shopping List</a></li>
+```
+
+We remove the Output _featureSelected_ and the method _onSelect_ from Our header.component.ts.
+
+The updated header.component.ts:
+```
+import { Component } from "@angular/core";
+
+@Component({
+    selector: 'app-header',
+    templateUrl: './header.component.html'
+})
+export class HeaderComponent {
+
+}
+```
+
+The updated header.component.html:
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a>Recipes</a></li>
+                <li><a>Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a href="#" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Save Data</a></li>
+                        <li><a href="#">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+```
+
+## The AppComponent
+
+We remove the property _loadedFeature_ and the method _onNavigate_ from app.component.ts:
+```
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+}
+```
+
+The line
+```
+<app-header (featureSelected)="onNavigate($event)"></app-header>
+```
+becomes
+```
+<app-header></app-header>
+```
+
+Our updated app.component.html:
+```
+<app-header></app-header>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+          <router-outlet></router-outlet>
+        </div>
+
+    </div>
+</div>
+```
+
