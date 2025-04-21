@@ -247,3 +247,57 @@ The corresponding template is:
 ```
 
 Notice that We use _property binding_ for the _src_ attribute.
+
+# Displaying Recipe details
+
+We use bootstrap to update the _recipe-detail.component.html_.
+
+```
+<div class="row">
+  <!-- column spanning the whole width -->
+  <div class="col-xs-12">
+    <img src="" alt="" class="img-responsive">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <h1>Recipe Name</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <!-- create a dropdown using bootstrap -->
+    <div class="btn-group">
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#">To Shopping List</a>
+        </li>
+        <li>
+          <a href="#">Edit Recipe</a>
+        </li>
+        <li>
+          <a href="#">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    Description
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    Ingredients
+  </div>
+</div>
+
+```
