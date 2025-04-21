@@ -2053,3 +2053,82 @@ The first segment name can be prepended with _/_, _./_ or _../_
 
 Now clicking _Recipes_ or _Shopping List_ in the navigation bar allows us to navigate to the right
 page.
+
+# Marking active routes
+
+The css class we need to add/remove is the _active_ class from bootstrap. We use _routerLinkActive="theClassWeWantToCOnditionalllyAddWhenActive"_
+
+our updated header.component.html:
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li routerLinkActive="active"><a routerLink="/recipes" style="cursor: pointer;">Recipes</a></li>
+                <li routerLinkActive="active"><a routerLink="/shopping-list" style="cursor: pointer;">Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a style="cursor: pointer;" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a style="cursor: pointer;">Save Data</a></li>
+                        <li><a style="cursor: pointer;">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+Notice that _routerLinkActive_ is placed on the _li_ element wrapping the _a_ tag.
+
+
+## Fixing the link when selecting a recipe
+
+The current RecipeItemComponent has the following template:
+```
+<a href="#" class="list-group-item clearfix"
+  (click)="onSelected()">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+    <p class="list-group-item-text">{{ recipe.description }}</p>
+  </div>
+  <span class="pull-right">
+    <img [src]="recipe.imagePath"
+         alt="{{recipe.name}}"
+         class="img-responsive"
+         style="max-height: 50px;" />
+  </span>
+</a>
+```
+
+The _href="#"_ makes the click on the link reload the page so that we don't see the selected item
+displayed. We fix this by removing this _href="#"_ element. Our updated template is:
+```
+<a class="list-group-item clearfix"
+  (click)="onSelected()"
+  style="cursor: pointer;">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+    <p class="list-group-item-text">{{ recipe.description }}</p>
+  </div>
+  <span class="pull-right">
+    <img [src]="recipe.imagePath"
+         alt="{{recipe.name}}"
+         class="img-responsive"
+         style="max-height: 50px;" />
+  </span>
+</a>
+
+```
+
+Now clicking on a recipe displays the recipe on the right.
+
+## Fixing other link where we reload the page
+
+We remove the _href="#"_ in other component templates.
