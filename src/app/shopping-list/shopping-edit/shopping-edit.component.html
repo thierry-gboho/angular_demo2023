@@ -5,13 +5,16 @@
         <!-- column spanning a width of 5. On small devices it should span the whole width -->
          <div class="col-sm-5 form-group">
             <label for="name">Name</label>
-            <input type="text" id="name" class="form-control" />
+            <input type="text" id="name" class="form-control"
+                    #nameInput />
+
          </div>
 
          <!-- column spanning a width of 2 -->
          <div class="col-sm-2 form-group">
             <label for="amount">Amount</label>
-            <input type="number" id="amount" class="form-control" />
+            <input type="number" id="amount" class="form-control"
+                  #amountInput />
          </div>
 
 
@@ -23,7 +26,7 @@
                     btn--danger: red
                     btn-primary: blue
                 -->
-                <button type="submit" class="btn btn-success">Add</button>
+                <button type="submit" class="btn btn-success" (click)="onAddItem()">Add</button>
                 <button type="button" class="btn btn-danger">Delete</button>
                 <button type="reset" class="btn btn-primary">Clear</button>
             </div>

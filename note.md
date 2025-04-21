@@ -743,3 +743,205 @@ export class RecipeDetailComponent {
 
 ```
 
+# Allowing the user to add ingredients to the shopping list
+
+Let's use _template variable_ to pass the data input by the user to the ShoppingEditComponent using
+the @ViewChild:
+
+## The ShoppingEditComponent
+
+shopping-edit.component.html
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form>
+      <div class="row">
+        <!-- column spanning a width of 5. On small devices it should span the whole width -->
+         <div class="col-sm-5 form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control"
+                    #nameInput />
+
+         </div>
+
+         <!-- column spanning a width of 2 -->
+         <div class="col-sm-2 form-group">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" class="form-control"
+                  #amountInput />
+         </div>
+
+
+         <div class="row">
+             <!-- col spanning the whole width -->
+            <div class="col-xs-12">
+                <!--
+                    btn-succes:  green
+                    btn--danger: red
+                    btn-primary: blue
+                -->
+                <button type="submit" class="btn btn-success" (click)="onAddItem()">Add</button>
+                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="reset" class="btn btn-primary">Clear</button>
+            </div>
+         </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+```
+
+shopping-edit.component.ts
+
+```
+import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Ingredient } from '../../shared/ingredient.model';
+
+@Component({
+  selector: 'app-shopping-edit',
+  templateUrl: './shopping-edit.component.html',
+  styleUrl: './shopping-edit.component.css'
+})
+export class ShoppingEditComponent {
+
+  @ViewChild('nameInput')
+  nameInputRef?: ElementRef;
+
+  @ViewChild('amountInput')
+  amountInputRef?: ElementRef;
+
+  @Output()
+  ingredientAdded = new EventEmitter<Ingredient>();
+
+
+  onAddItem(): void {
+    const name = this.nameInputRef?.nativeElement.value;
+    const amount = this.amountInputRef?.nativeElement.value;
+    const ingredient = new Ingredient(name, amount);
+    this.ingredientAdded.emit(ingredient);
+  }
+
+
+}
+```
+
+## Alternative ShoppingEditComponent by passing the template variable in the click event
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form>
+      <div class="row">
+        <!-- column spanning a width of 5. On small devices it should span the whole width -->
+         <div class="col-sm-5 form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control"
+                    #nameInput />
+
+         </div>
+
+         <!-- column spanning a width of 2 -->
+         <div class="col-sm-2 form-group">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" class="form-control"
+                  #amountInput />
+         </div>
+
+
+         <div class="row">
+             <!-- col spanning the whole width -->
+            <div class="col-xs-12">
+                <!--
+                    btn-succes:  green
+                    btn--danger: red
+                    btn-primary: blue
+                -->
+                <button type="submit" class="btn btn-success" 
+                  (click)="onAddItem(nameInputRef, amountInputRef)">Add</button>
+                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="reset" class="btn btn-primary">Clear</button>
+            </div>
+         </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+```
+
+```
+import { Component, ElementRef, EventEmitter, Output } from '@angular/core';
+import { Ingredient } from '../../shared/ingredient.model';
+
+@Component({
+  selector: 'app-shopping-edit',
+  templateUrl: './shopping-edit.component.html',
+  styleUrl: './shopping-edit.component.css'
+})
+export class ShoppingEditComponent {
+
+  @Output()
+  ingredientAdded = new EventEmitter<Ingredient>();
+
+  onAddItem(nameInputRef: ElementRef | undefined, amountInputRef: ElementRef | undefined) {
+    const name = nameInputRef?.nativeElement.value;
+    const amount = amountInputRef?.nativeElement.value;
+    const ingredient = new Ingredient(name, amount);
+    this.ingredientAdded.emit(ingredient);
+  }
+}
+```
+
+## The ShoppingListComponent
+
+We update the ShoppingListComponent to listen to the _ingredientAdded_ event so that it
+updates the list of ingredients when it receives that event.
+
+the shopping-list.component.html:
+```
+<div class="row">
+    <div class="col-xs-10">
+        <app-shopping-edit
+          (ingredientAdded)="onIngredientAdded($event)"></app-shopping-edit>
+
+        <hr />
+        <ul class="list-group">
+          <a class="list-group-item"
+            style="cursor: pointer"
+            *ngFor="let ingredient of ingredients">
+            {{ingredient.name}} ({{ingredient.amount}})
+          </a>
+        </ul>
+    </div>
+</div>
+```
+
+The shopping-list.component.ts:
+```
+import { Component, OnInit } from '@angular/core';
+import { Ingredient } from '../shared/ingredient.model';
+
+@Component({
+  selector: 'app-shopping-list',
+  templateUrl: './shopping-list.component.html',
+  styleUrl: './shopping-list.component.css'
+})
+export class ShoppingListComponent implements OnInit {
+
+  ingredients: Ingredient[] = [];
+
+  ngOnInit(): void {
+    this.ingredients = [
+      new Ingredient('Apples', 5),
+      new Ingredient('Tomatoes', 10)
+    ]
+  }
+
+  onIngredientAdded(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }
+
+}
+```
