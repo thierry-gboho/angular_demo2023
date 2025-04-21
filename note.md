@@ -175,3 +175,75 @@ and add this line to header.component.ts:
 
     collapsed = true;
 
+# Outputting a list of recipes with NgFor
+
+We add a recipe model which contains the recipe _name_, _description_, and _image path_. This class
+is defined in _app/recipes/recipe.model.ts_
+
+```
+export class Recipe {
+  public name: string;
+  public description: string;
+  public imagePath: string;
+
+  constructor(name: string, description: string, imagePath: string) {
+    this.name = name;
+    this.description = description;
+    this.imagePath = imagePath;
+  }
+}
+```
+
+Then we use this model to ouptut a list of recipes in the RecipeListComponent:
+The recipe-list.component.ts is as follows:
+`import { Component, OnInit } from '@angular/core';
+import { Recipe } from '../recipe.model';
+
+@Component({
+  selector: 'app-recipe-list',
+  templateUrl: './recipe-list.component.html',
+  styleUrl: './recipe-list.component.css'
+})
+export class RecipeListComponent implements OnInit {
+
+  recipes: Recipe[] = [];
+
+  ngOnInit(): void {
+    this.recipes = [
+      new Recipe('Ratatouille', 'This is a simple test: ratatouille', 'assets/ratatouille.jpg'),
+      new Recipe('Flan', 'This is a simple test: flan', 'assets/flan.jpg')
+    ];
+  }
+
+}
+
+```
+
+The corresponding template is:
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <a href="#" class="list-group-item clearfix" *ngFor="let recipe of recipes">
+      <div class="pull-left">
+        <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+        <p class="list-group-item-text">{{ recipe.description }}</p>
+      </div>
+      <span class="pull-right">
+        <img [src]="recipe.imagePath"
+             alt="{{recipe.name}}"
+             class="img-responsive"
+             style="max-height: 50px;" />
+      </span>
+    </a>
+    <app-recipe-item></app-recipe-item>
+  </div>
+</div>
+```
+
+Notice that We use _property binding_ for the _src_ attribute.
