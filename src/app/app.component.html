@@ -2,11 +2,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <app-recipes *ngIf="loadedFeature === 'recipes'; else elseBlock"></app-recipes>
-            <ng-template #elseBlock>
-              <app-shopping-list></app-shopping-list>
-            </ng-template>
-
+          <router-outlet></router-outlet>
         </div>
 
     </div>

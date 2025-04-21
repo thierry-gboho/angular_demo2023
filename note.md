@@ -1768,3 +1768,107 @@ recipe-detail.component.html:
 </div>
 
 ```
+# Setting up routes
+
+We add the _app-routing.module.ts_ to configure our routes. That module is then imported
+into _app.module.ts_
+
+## The app-routing.module.ts
+
+```
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { RecipesComponent } from "./recipes/recipes.component";
+import { ShoppingListComponent } from "./shopping-list/shopping-list.component";
+
+const appRoutes: Routes = [
+  {
+    // the route that is loaded when we first visit the page
+    path: '', redirectTo: '/recipes', pathMatch: "full"
+  },
+  {
+    path: 'recipes', component: RecipesComponent
+  },
+  {
+    path: 'shopping-list', component: ShoppingListComponent
+  },
+
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot(appRoutes)  // configure the router
+  ],
+  exports: [
+    RouterModule // make the router available to the parent module (i.e. AppModule)
+  ]
+})
+export class AppRoutingModule {
+
+}
+
+```
+
+_Note:_ We have to add _pathMatch: "full"_ to the default path to make sure that redirection
+only occurs when the _empty string_ matches the _full path_. The default setting for pathMatch is
+_prefix_ (i.e. matches if the path begins with the specified string)
+
+## The app.module.ts
+
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+import { ShoppingListService } from './shopping-list/shopping-list.service';
+import { AppRoutingModule } from './app-routing.module';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    AppRoutingModule
+  ],
+  providers: [ShoppingListService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+
+## The app.component.html
+
+```
+<app-header (featureSelected)="onNavigate($event)"></app-header>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+          <router-outlet></router-outlet>
+        </div>
+
+    </div>
+</div>
+```
+
+When the application first starts it redirects to http://localhost:4200/recipes
+You can then enter the url http://localhost:4200/shopping-list to go to the Shopping list
