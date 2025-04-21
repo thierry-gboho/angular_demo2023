@@ -19,4 +19,29 @@ export class ShoppingListService {
     this.updatedIngredientsEvt.emit(this.ingredients.slice());
   }
 
+  addIngredients(ingredients: Ingredient[]): void {
+    /**
+     * This is a viable option but it will emit a lot of events. It won't be bad
+     * because even a recipe with 30 ingredients won't blow up our app but still there are
+     * lots of unecessary event emissions. So even though it's a viable option, we'll comment
+     * it out
+     */
+    // for (let Ingredient of this.ingredients) {
+    //  this.addIngredient(Ingredient);
+    // }
+
+    /*
+    * A different and better option would be to directly add all our ingredients in one go
+    * and then emit our event.
+    *
+    * We use the spread operator to push all our ingredients to the ingredients array
+    * That is, we use the fact that push can take a list of values. For exemple
+    * myNumberArray.push(3, 5, 7);
+    */
+    this.ingredients.push(...ingredients);
+
+    // emit the event
+    this.updatedIngredientsEvt.emit(this.ingredients.slice());
+  }
+
 }

@@ -1581,3 +1581,190 @@ export class ShoppingListService {
 
 }
 ```
+
+# Passing ingredients from the Recipes to the Shopping List (via a service)
+
+We update the RecipesService so that we can inject the ShoppingListService into that service. The
+idea is that when we click on the dropdown menu _To Shopping List_ in the RecipeDetailComponent template,
+we add the _selected recipe ingredients_ to the shopping list
+
+## The RecipesService
+
+```
+import { ShoppingListService } from './../shopping-list/shopping-list.service';
+import { Ingredient } from './../shared/ingredient.model';
+import { EventEmitter, Injectable } from "@angular/core";
+import { Recipe } from "./recipe.model";
+
+// add @Injectable to be able to inject a service into this service
+// we want to inject the ShoppingListService into this service
+@Injectable()
+export class RecipesService {
+  onSelectRecipeEvt = new EventEmitter<Recipe>();
+  selectedRecipe?: Recipe;
+
+  private recipes: Recipe[] = [
+    new Recipe('Ratatouille', 'This is a simple test: ratatouille', 'assets/ratatouille.jpg',
+      [new Ingredient('Meat', 1),
+        new Ingredient('Tomatoe', 3)
+      ]
+    ),
+    new Recipe('Flan', 'This is a simple test: flan', 'assets/flan.jpg',
+      [
+        new Ingredient('Meat', 3),
+        new Ingredient('Tomatoe', 5),
+        new Ingredient('Onion', 2)
+      ]
+    )
+  ];
+
+
+  constructor(private shoppingListService: ShoppingListService ){}
+
+  public getRecipes() {
+    return this.recipes.slice(); // return a copy
+  }
+
+  public addIngredientsToShoppingList(ingredients: Ingredient[]): void {
+    this.shoppingListService.addIngredients(ingredients);
+  }
+}
+
+```
+
+## The ShoppingListService
+
+We add the method _addIngredients_ to add multiple ingredients to the shopping list:
+
+```
+import { EventEmitter } from "@angular/core";
+import { Ingredient } from "../shared/ingredient.model";
+
+export class ShoppingListService {
+
+  updatedIngredientsEvt = new EventEmitter<Ingredient[]>();
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients.slice(); // return a copy
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+    this.updatedIngredientsEvt.emit(this.ingredients.slice());
+  }
+
+  addIngredients(ingredients: Ingredient[]): void {
+    /**
+     * This is a viable option but it will emit a lot of events. It won't be bad
+     * because even a recipe with 30 ingredients won't blow up our app but still there are
+     * lots of unecessary event emissions. So even though it's a viable option, we'll comment
+     * it out
+     */
+    // for (let Ingredient of this.ingredients) {
+    //  this.addIngredient(Ingredient);
+    // }
+
+    /*
+    * A different and better option would be to directly add all our ingredients in one go
+    * and then emit our event.
+    *
+    * We use the spread operator to push all our ingredients to the ingredients array
+    * That is, we use the fact that push can take a list of values. For exemple
+    * myNumberArray.push(3, 5, 7);
+    */
+    this.ingredients.push(...ingredients);
+
+    // emit the event
+    this.updatedIngredientsEvt.emit(this.ingredients.slice());
+  }
+
+}
+```
+
+## The RecipeDetailComponent
+
+recipe-detail.component.ts:
+```
+import { Component, Input } from '@angular/core';
+import { Recipe } from '../recipe.model';
+import { RecipesService } from '../recipes.service';
+
+@Component({
+  selector: 'app-recipe-detail',
+  templateUrl: './recipe-detail.component.html',
+  styleUrl: './recipe-detail.component.css'
+})
+export class RecipeDetailComponent {
+
+  @Input({required: true})
+  recipe!: Recipe;
+
+  constructor(private recipesService: RecipesService) {}
+
+  onAddToShoppingList() {
+    this.recipesService.addIngredientsToShoppingList(this.recipe.ingredients);
+  }
+}
+```
+
+recipe-detail.component.html:
+```
+<div class="row">
+  <!-- column spanning the whole width -->
+  <div class="col-xs-12">
+    <img [src]="recipe.imagePath"
+        alt="{{recipe.description}}" class="img-responsive"
+        style="max-height: 300px">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <h1>{{recipe.name}}</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <!-- create a dropdown using bootstrap -->
+    <div class="btn-group" appDropdown>
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a (click)="onAddToShoppingList()">To Shopping List</a>
+        </li>
+        <li>
+          <a href="#">Edit Recipe</a>
+        </li>
+        <li>
+          <a href="#">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    {{recipe.description}}
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let ingredient of recipe.ingredients">
+        {{ingredient.name}}: {{ingredient.amount}}
+      </li>
+    </ul>
+  </div>
+</div>
+
+```
