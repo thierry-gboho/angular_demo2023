@@ -417,4 +417,97 @@ We update the shopping-edit.component.html by adding
   </div>
 </div>
 ```
+# Adding navigation with event binding and NgIf
 
+We hook up navigation to either load _recipes_ or the _shopping list_. In this section we shall use
+_event binding_ and _NgIf_ to do this. Later we'll do this with _routing_ as this is the way it is meant
+to be done. But the solution we'll use now also is very creative and not bad.
+
+We add the click event on the buttons in the header.component.html so that they emit either the string _recipes_ or _shoppingList_
+
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="#" (click)="onSelect('recipes')">Recipes</a></li>
+                <li><a href="#" (click)="onSelect('shoppingList')">Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Save Data</a></li>
+                        <li><a href="#">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+The corresponding ts file contains the event emitter as Output:
+```
+import { Component, EventEmitter, Output } from "@angular/core";
+
+@Component({
+    selector: 'app-header',
+    templateUrl: './header.component.html'
+})
+export class HeaderComponent {
+
+  @Output()
+  featureSelected = new EventEmitter<string>();
+
+  onSelect(feature: string): void {
+    this.featureSelected.emit(feature);
+  }
+
+}
+
+```
+
+Finally in the app.component.html we add a listener on the event output by the the HeaderComponent
+
+1. The reception of the event triggers the _onNavigate_ method which updates the _loadedFeature_ property)
+2. We use NgIf to display either the RecipesComponent or the ShoppingListComponent 
+
+```
+<app-header (featureSelected)="onNavigate($event)"></app-header>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <app-recipes *ngIf="loadedFeature === 'recipes'; else elseBlock"></app-recipes>
+            <ng-template #elseBlock>
+              <app-shopping-list></app-shopping-list>
+            </ng-template>
+
+        </div>
+
+    </div>
+</div>
+```
+
+The updated app.component.ts file is as follows:
+```
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  loadedFeature = 'recipes';
+
+  onNavigate(featureSelected: string) {
+    this.loadedFeature = featureSelected;
+  }
+}
+
+```
