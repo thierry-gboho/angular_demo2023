@@ -511,3 +511,235 @@ export class AppComponent {
 }
 
 ```
+
+# Passing data with envent and property binding from a child component to a grand-parent component
+
+```
+                      RecipesComponent
+                              |
+                              |
+          ____________________|__________________
+          |                                      |
+      RecipeListComponent                    RecipeDetailComponent
+          |
+          |
+     RecipeItemComponent
+
+```
+
+a click on a _RecipeItemComponent_ emits an event _recipeSelected_ to its parent the _RecipeList_ component.
+
+The recipe-item.component.html:
+
+```
+<a href="#" class="list-group-item clearfix"
+  (click)="onSelected()">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+    <p class="list-group-item-text">{{ recipe.description }}</p>
+  </div>
+  <span class="pull-right">
+    <img [src]="recipe.imagePath"
+         alt="{{recipe.name}}"
+         class="img-responsive"
+         style="max-height: 50px;" />
+  </span>
+</a>
+
+```
+
+The recipe-item.component.ts:
+
+```
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Recipe } from '../../recipe.model';
+
+@Component({
+  selector: 'app-recipe-item',
+  templateUrl: './recipe-item.component.html',
+  styleUrl: './recipe-item.component.css'
+})
+export class RecipeItemComponent {
+
+  @Input({required:true})
+  recipe !: Recipe;
+
+  @Output()
+  recipeSelected = new EventEmitter<void>();
+
+  onSelected(): void {
+    this.recipeSelected.emit();
+  }
+
+}
+```
+
+When the RecipeList receives the _recipeSelected()_ event, it emits an event _selectedRecipeEvt_
+which conains the _recipe_ selected to its parent the RecipesComponent
+
+The recipe-list.component.html:
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <app-recipe-item [recipe]="recipeItem" *ngFor="let recipeItem of recipes"
+      (recipeSelected)="onSelectRecipe(recipeItem)"></app-recipe-item>
+  </div>
+</div>
+
+```
+
+The recipe-list.component.ts:
+
+```
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Recipe } from '../recipe.model';
+
+@Component({
+  selector: 'app-recipe-list',
+  templateUrl: './recipe-list.component.html',
+  styleUrl: './recipe-list.component.css'
+})
+export class RecipeListComponent implements OnInit {
+
+  recipes: Recipe[] = [];
+
+  @Output()
+  selectedRecipeEvt = new EventEmitter<Recipe>();
+
+  ngOnInit(): void {
+    this.recipes = [
+      new Recipe('Ratatouille', 'This is a simple test: ratatouille', 'assets/ratatouille.jpg'),
+      new Recipe('Flan', 'This is a simple test: flan', 'assets/flan.jpg')
+    ];
+  }
+
+  onSelectRecipe(recipe: Recipe): void  {
+    this.selectedRecipeEvt.emit(recipe);
+  }
+
+}
+```
+
+The RecipesComponent listens to the _selectedRecipeEvt_ emitted by its child component RecipeListComponent
+and updates its _selectedRecipe_ when this event is received, then it passes this _selectedRecipe_ to
+second child the RecipeDetailComponent.
+
+The recipes.component.html:
+
+```
+<div class="row">
+    <div class="col-md-5">
+        <app-recipe-list
+        (selectedRecipeEvt)="selectedRecipe = $event"></app-recipe-list>
+    </div>
+    <div class="col-md-7">
+        <app-recipe-detail *ngIf="selectedRecipe; else elseBlock"
+          [recipe]="selectedRecipe"></app-recipe-detail>
+        <ng-template #elseBlock>
+          <p>Please select a recipe</p>
+        </ng-template>
+    </div>
+</div>
+```
+
+The recipes.component.ts:
+
+```
+import { Component } from '@angular/core';
+import { Recipe } from './recipe.model';
+
+@Component({
+  selector: 'app-recipes',
+  templateUrl: './recipes.component.html',
+  styleUrl: './recipes.component.css'
+})
+export class RecipesComponent {
+
+  selectedRecipe?: Recipe;
+
+}
+
+```
+
+The recipe-detail.component.html:
+
+```
+<div class="row">
+  <!-- column spanning the whole width -->
+  <div class="col-xs-12">
+    <img [src]="recipe.imagePath"
+        alt="{{recipe.description}}" class="img-responsive"
+        style="max-height: 300px">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <h1>{{recipe.name}}</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <!-- create a dropdown using bootstrap -->
+    <div class="btn-group">
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#">To Shopping List</a>
+        </li>
+        <li>
+          <a href="#">Edit Recipe</a>
+        </li>
+        <li>
+          <a href="#">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    {{recipe.description}}
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    Ingredients
+  </div>
+</div>
+
+```
+
+The recipe-detail.component.ts:
+
+```
+import { Component, Input } from '@angular/core';
+import { Recipe } from '../recipe.model';
+
+@Component({
+  selector: 'app-recipe-detail',
+  templateUrl: './recipe-detail.component.html',
+  styleUrl: './recipe-detail.component.css'
+})
+export class RecipeDetailComponent {
+
+  @Input({required: true})
+  recipe!: Recipe;
+
+
+}
+
+```
+
