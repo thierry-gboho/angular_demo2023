@@ -373,3 +373,48 @@ and _shopping-list.component.html_  file:
     </div>
 </div>
 ```
+
+# Adding the shopping list edit section
+
+We update the shopping-edit.component.html by adding 
+1. the _name_ input text
+2. the _amount_ input number
+3. the buttons add/delete/clear
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form>
+      <div class="row">
+        <!-- column spanning a width of 5. On small devices it should span the whole width -->
+         <div class="col-sm-5 form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control" />
+         </div>
+
+         <!-- column spanning a width of 2 -->
+         <div class="col-sm-2 form-group">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" class="form-control" />
+         </div>
+
+
+         <div class="row">
+             <!-- col spanning the whole width -->
+            <div class="col-xs-12">
+                <!--
+                    btn-succes:  green
+                    btn--danger: red
+                    btn-primary: blue
+                -->
+                <button type="submit" class="btn btn-success">Add</button>
+                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="reset" class="btn btn-primary">Clear</button>
+            </div>
+         </div>
+      </div>
+    </form>
+  </div>
+</div>
+```
+
