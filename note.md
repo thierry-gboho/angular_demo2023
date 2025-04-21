@@ -1503,3 +1503,81 @@ export class ShoppingListService {
 }
 ```
 
+## The ShoppingListComponent (A third approach solving the display bug)
+
+This time 
+1. we use a _getter_ in our ShoppingListComponent which calls the _getIngredients_ of the service
+2. the getIngredients from the service returns a copy of its _ingredients_ array
+
+The ShoppingListService:
+```
+import { Ingredient } from "../shared/ingredient.model";
+
+export class ShoppingListService {
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients.slice(); // return a copy
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }
+
+}
+```
+
+The ShoppingListComponent:
+```
+import { Component, OnInit } from '@angular/core';
+import { Ingredient } from '../shared/ingredient.model';
+import { ShoppingListService } from './shopping-list.service';
+
+@Component({
+  selector: 'app-shopping-list',
+  templateUrl: './shopping-list.component.html',
+  styleUrl: './shopping-list.component.css'
+})
+export class ShoppingListComponent implements OnInit {
+
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  ngOnInit(): void {
+  }
+
+  get ingredients(): Ingredient[] {
+    return this.shoppingListService.getIngredients();
+  }
+}
+```
+## The ShoppingListComponent (A fourth approach solving the display bug)
+
+This time 
+1. we use a _event emitter_ in our ShoppingListService to emit a copy of the updated array
+2. the ShoppingListComponent now subscribes to that event emitter to update its _ingredients_ array
+
+The ShoppingListService:
+```
+import { Ingredient } from "../shared/ingredient.model";
+
+export class ShoppingListService {
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients.slice(); // return a copy
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }
+
+}
+```
