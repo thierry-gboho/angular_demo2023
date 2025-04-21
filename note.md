@@ -301,3 +301,75 @@ We use bootstrap to update the _recipe-detail.component.html_.
 </div>
 
 ```
+
+# Creating the Ingredient model
+
+We can either explicitly define the properties as we did for the RecipeModel:
+
+```
+export class Ingredient {
+  public name: string;
+  public amount: number;
+
+  constructor(name: string, amount: number) {
+    this.name = name;
+    this.amount = amount;
+  }
+}
+```
+
+or add the accessors in the constructor with an empty body and get exactly the same behaviour (i.e. The properties
+are now declared in the list of parameters of the constructor)
+```
+export class Ingredient {
+  constructor(public name: string, public amount: number) {}
+}
+```
+
+# Displaying the ingredient list
+
+To display the ingredient list, we update the _shopping-list.component.ts_ file:
+
+
+```
+import { Component, OnInit } from '@angular/core';
+import { Ingredient } from '../shared/ingredient.model';
+
+@Component({
+  selector: 'app-shopping-list',
+  templateUrl: './shopping-list.component.html',
+  styleUrl: './shopping-list.component.css'
+})
+export class ShoppingListComponent implements OnInit {
+
+  ingredients: Ingredient[] = [];
+
+  ngOnInit(): void {
+    this.ingredients = [
+      new Ingredient('Apples', 5),
+      new Ingredient('Tomatoes', 10)
+    ]
+  }
+
+}
+
+```
+
+and _shopping-list.component.html_  file:
+
+```
+<div class="row">
+    <div class="col-xs-10">
+        <app-shopping-edit></app-shopping-edit>
+
+        <hr />
+        <ul class="list-group">
+          <a class="list-group-item"
+            style="cursor: pointer"
+            *ngFor="let ingredient of ingredients">
+            {{ingredient.name}} ({{ingredient.amount}})
+          </a>
+        </ul>
+    </div>
+</div>
+```
