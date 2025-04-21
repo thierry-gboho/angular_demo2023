@@ -1996,4 +1996,60 @@ Our updated app.component.html:
     </div>
 </div>
 ```
+# Adding navigation to the App using _routerLink="path"_ on the _a_ tag element
 
+## The header.component.html
+
+Use the _routerLink="path"_ on the link to define the link url and hence implement the navigation
+
+Our update header.component.html
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a routerLink="/recipes">Recipes</a></li>
+                <li><a routerLink="/shopping-list">Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a href="#" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Save Data</a></li>
+                        <li><a href="#">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+## Note
+
+The _routerLink_ can be used following the syntaxes:
+
+```
+<a [routerLink]="['/user/bob']">Link To user component</a>
+
+<a routerLink="/user/bob">Link To user component</a>
+```
+
+The first syntax allows for dynamic parameters in the path. The right hand side
+of the expression is actually an array of path segments. For exemple, a link to
+_/team/${teamId}/user/${userName}/${details ? true : false}_ is given as:
+```
+<a [routerLink]="['/team', teamId, 'user', userName, {details: true}]">Link To user component</a>
+```
+
+The first segment name can be prepended with _/_, _./_ or _../_
+1. If the first segment begins with '/', the router looks up the route from the root of the app
+2. If the first segment begins with './', or does not begin with a slash, the router looks in the children of the current activated route
+3. If the first segment begins with '../', the router goes up one level in the route tree
+
+Now clicking _Recipes_ or _Shopping List_ in the navigation bar allows us to navigate to the right
+page.
