@@ -945,3 +945,198 @@ export class ShoppingListComponent implements OnInit {
 
 }
 ```
+
+# Building and using a dropdown directive
+
+The idea is to create a directive so that when clicking the button in the following html:
+```
+<!-- create a dropdown using bootstrap -->
+    <div class="btn-group">
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#">To Shopping List</a>
+        </li>
+        <li>
+          <a href="#">Edit Recipe</a>
+        </li>
+        <li>
+          <a href="#">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+```
+
+  we add the css class _open_ and get:
+  ```
+  <!-- create a dropdown using bootstrap -->
+    <div class="btn-group open">
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#">To Shopping List</a>
+        </li>
+        <li>
+          <a href="#">Edit Recipe</a>
+        </li>
+        <li>
+          <a href="#">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  ```
+  another click will remove the css class _open_ and so on. This will open the dropdown when
+  we click on the button.
+
+## The dropdown directive
+
+```
+import { Directive, HostBinding, HostListener } from "@angular/core";
+
+@Directive({
+  selector: '[appDropdown]'
+})
+export class DropdownDirective {
+
+  // the css class open is attached if opened is true else it is not attached to the tag element
+  @HostBinding('class.open')
+  opened = false;
+
+  // listen to the click event on the host element to update the opened property
+  @HostListener('click')
+  toggleOpen() {
+    this.opened = !this.opened;
+  }
+
+}
+```
+
+## The updated code
+
+We add the _DropdownDirective_ to the _declarations_ array of our AppModule:
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+
+We update our dropdowns in the headerComponent and recipeDetailComponent templates:
+
+header.component.html:
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="#" (click)="onSelect('recipes')">Recipes</a></li>
+                <li><a href="#" (click)="onSelect('shoppingList')">Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a href="#" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Save Data</a></li>
+                        <li><a href="#">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+```
+
+recipe-detail.component.html
+```
+<div class="row">
+  <!-- column spanning the whole width -->
+  <div class="col-xs-12">
+    <img [src]="recipe.imagePath"
+        alt="{{recipe.description}}" class="img-responsive"
+        style="max-height: 300px">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <h1>{{recipe.name}}</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <!-- create a dropdown using bootstrap -->
+    <div class="btn-group" appDropdown>
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a href="#">To Shopping List</a>
+        </li>
+        <li>
+          <a href="#">Edit Recipe</a>
+        </li>
+        <li>
+          <a href="#">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    {{recipe.description}}
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    Ingredients
+  </div>
+</div>
+
+```
