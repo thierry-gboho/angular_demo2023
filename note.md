@@ -1324,4 +1324,182 @@ export class RecipesComponent implements OnInit {
 }
 ```
 
+# Adding the ShoppingListService
+
+## The ShoppingListService
+
+```
+import { Ingredient } from "../shared/ingredient.model";
+
+export class ShoppingListService {
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients.slice(); // return a copy
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }
+
+}
+
+```
+
+## Providing the service in the application root
+
+We provide this service in the AppModule as it will be used another service later.
+
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+import { ShoppingListService } from './shopping-list/shopping-list.service';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule
+  ],
+  providers: [ShoppingListService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+## The ShoppingEditComponent
+
+```
+import { ShoppingListService } from './../shopping-list.service';
+import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Ingredient } from '../../shared/ingredient.model';
+
+@Component({
+  selector: 'app-shopping-edit',
+  templateUrl: './shopping-edit.component.html',
+  styleUrl: './shopping-edit.component.css'
+})
+export class ShoppingEditComponent {
+
+  @ViewChild('nameInput')
+  nameInputRef?: ElementRef;
+
+  @ViewChild('amountInput')
+  amountInputRef?: ElementRef;
+
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  onAddItem(): void {
+    const name = this.nameInputRef?.nativeElement.value;
+    const amount = this.amountInputRef?.nativeElement.value;
+    const ingredient = new Ingredient(name, amount);
+    this.shoppingListService.addIngredient(ingredient);
+  }
+
+}
+```
+
+## The ShoppingListComponent (A first approach with a display bug)
+
+The ShoppingListService:
+```
+import { Ingredient } from "../shared/ingredient.model";
+
+export class ShoppingListService {
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients.slice(); // return a copy
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }
+
+}
+```
+
+The ShoppingListComponent:
+```
+import { Component, OnInit } from '@angular/core';
+import { Ingredient } from '../shared/ingredient.model';
+import { ShoppingListService } from './shopping-list.service';
+
+@Component({
+  selector: 'app-shopping-list',
+  templateUrl: './shopping-list.component.html',
+  styleUrl: './shopping-list.component.css'
+})
+export class ShoppingListComponent implements OnInit {
+
+  ingredients!: Ingredient[];
+
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  ngOnInit(): void {
+    this.ingredients = this.shoppingListService.getIngredients();
+  }
+
+}
+```
+
+When we add a new ingredient, it is not displayed in the UI because the _ingredients_  
+in the ShoppingListComponent always point to the _same_ array it was initialized with
+in ngOnInit which is different from the one used by the service because the service _getIngredients_ returns a _copy_ of the service _ingredients_ array
+
+
+## The ShoppingListComponent (A second approach solving the display bug)
+
+A solution to the previous bug would be to return the service array rather that a copy
+in its _getIngredients_:
+
+```
+import { Ingredient } from "../shared/ingredient.model";
+
+export class ShoppingListService {
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients; // return the shopping list array
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }
+
+}
+```
 
