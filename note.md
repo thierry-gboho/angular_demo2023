@@ -1158,4 +1158,170 @@ If you want that a dropdown can also be closed by a click anywhere outside (whic
       constructor(private elRef: ElementRef) {}
     }
 
+# Adding the RecipesService
+
+We replace the chained output events from _RecipeItemComponent_ --> _RecipeListComponent_ --> _RecipesComponent_ using:
+
+1. an event emitter in the _RecipesService_ which emits the selected recipe when we click on the _RecipeItemComponent_
+2. a subscription to the event emitter is done in the ngOnInit of the RecipesComponent
+
+## The RecipesService
+
+```
+import { EventEmitter } from "@angular/core";
+import { Recipe } from "./recipe.model";
+
+
+export class RecipesService {
+  onSelectRecipeEvt = new EventEmitter<Recipe>();
+  selectedRecipe?: Recipe;
+
+  private recipes: Recipe[] = [
+    new Recipe('Ratatouille', 'This is a simple test: ratatouille', 'assets/ratatouille.jpg'),
+    new Recipe('Flan', 'This is a simple test: flan', 'assets/flan.jpg')
+  ];
+
+  public getRecipes() {
+    // return a copy
+    return this.recipes.slice();
+  }
+}
+```
+
+## The RecipeItemComponent
+
+recipe-item.component.html
+```
+import { EventEmitter } from "@angular/core";
+import { Recipe } from "./recipe.model";
+
+
+export class RecipesService {
+  onSelectRecipeEvt = new EventEmitter<Recipe>();
+  selectedRecipe?: Recipe;
+
+  private recipes: Recipe[] = [
+    new Recipe('Ratatouille', 'This is a simple test: ratatouille', 'assets/ratatouille.jpg'),
+    new Recipe('Flan', 'This is a simple test: flan', 'assets/flan.jpg')
+  ];
+
+  public getRecipes() {
+    // return a copy
+    return this.recipes.slice();
+  }
+}
+```
+
+recipe-item.component.ts
+```
+import { Component, Input} from '@angular/core';
+import { Recipe } from '../../recipe.model';
+import { RecipesService } from '../../recipes.service';
+
+@Component({
+  selector: 'app-recipe-item',
+  templateUrl: './recipe-item.component.html',
+  styleUrl: './recipe-item.component.css'
+})
+export class RecipeItemComponent {
+
+  @Input({required:true})
+  recipe !: Recipe;
+
+  constructor(private recipesService: RecipesService) {}
+
+  onSelected(): void {
+    this.recipesService.onSelectRecipeEvt.emit(this.recipe);
+  }
+
+}
+```
+
+## The RecipeListCoomponent
+
+recipe-list.component.html
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <app-recipe-item [recipe]="recipeItem" *ngFor="let recipeItem of recipes"></app-recipe-item>
+  </div>
+</div>
+```
+
+recipe-list.component.ts
+```
+import { Component, OnInit } from '@angular/core';
+import { RecipesService } from '../recipes.service';
+
+@Component({
+  selector: 'app-recipe-list',
+  templateUrl: './recipe-list.component.html',
+  styleUrl: './recipe-list.component.css'
+})
+export class RecipeListComponent implements OnInit {
+
+  constructor(private recipesService: RecipesService) {}
+
+  public get recipes() {
+    return this.recipesService.getRecipes();
+  }
+
+  ngOnInit(): void {
+  }
+
+}
+```
+
+## The RecipesComponent
+
+recipes.component.html
+```
+<div class="row">
+    <div class="col-md-5">
+        <app-recipe-list></app-recipe-list>
+    </div>
+    <div class="col-md-7">
+        <app-recipe-detail *ngIf="selectedRecipe; else elseBlock"
+          [recipe]="selectedRecipe"></app-recipe-detail>
+        <ng-template #elseBlock>
+          <p>Please select a recipe</p>
+        </ng-template>
+    </div>
+</div>
+```
+
+recipes.component.ts
+```
+import { Component, OnInit } from '@angular/core';
+import { Recipe } from './recipe.model';
+import { RecipesService } from './recipes.service';
+
+@Component({
+  selector: 'app-recipes',
+  templateUrl: './recipes.component.html',
+  styleUrl: './recipes.component.css',
+  providers: [RecipesService]
+})
+export class RecipesComponent implements OnInit {
+
+  selectedRecipe?: Recipe;
+
+  constructor(private recipesService: RecipesService) {}
+
+  ngOnInit(): void {
+    // subscribe to the event emitter
+    this.recipesService.onSelectRecipeEvt.subscribe(
+      (recipe) => this.selectedRecipe = recipe
+    );
+  }
+
+}
+```
+
 
