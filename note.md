@@ -2132,3 +2132,92 @@ Now clicking on a recipe displays the recipe on the right.
 ## Fixing other link where we reload the page
 
 We remove the _href="#"_ in other component templates.
+
+# Adding child routing
+
+## Create the default detail component for the url http://localhost:4200/recipes/
+
+We define the child component to be displayed when the user has not selected a recipe yet.
+
+Its template recipe-start.component.html:
+```
+<h3>Please select a recipe</h3>
+```
+
+## Add the child routing definition in the app-routing.module.ts
+
+```
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { RecipesComponent } from "./recipes/recipes.component";
+import { ShoppingListComponent } from "./shopping-list/shopping-list.component";
+import { RecipeStartComponent } from "./recipes/recipe-start/recipe-start.component";
+import { RecipeDetailComponent } from "./recipes/recipe-detail/recipe-detail.component";
+
+const appRoutes: Routes = [
+  {
+    // the route that is loaded when we first visit the page
+    path: '', redirectTo: '/recipes', pathMatch: "full"
+  },
+  {
+    path: 'recipes', component: RecipesComponent,
+    children: [
+      {
+        // detail component to load for the url http://localhost:4200/recipes/
+        path: '', component: RecipeStartComponent
+      },
+      {
+        // component to load for the url http://localhost:4200/recipes/${id}
+        path: ':id', component: RecipeDetailComponent
+      }
+    ]
+  },
+  {
+    path: 'shopping-list', component: ShoppingListComponent
+  },
+
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot(appRoutes)  // configure the router
+  ],
+  exports: [
+    RouterModule // make the router available to the parent module (i.e. AppModule)
+  ]
+})
+export class AppRoutingModule {
+
+}
+```
+
+## Add the router-outlet where the child component is supposed to be displayed
+
+In recipes.component.html we replace
+```
+<div class="row">
+    <div class="col-md-5">
+        <app-recipe-list></app-recipe-list>
+    </div>
+    <div class="col-md-7">
+        <app-recipe-detail *ngIf="selectedRecipe; else elseBlock"
+          [recipe]="selectedRecipe"></app-recipe-detail>
+        <ng-template #elseBlock>
+          <p>Please select a recipe</p>
+        </ng-template>
+    </div>
+</div>
+```
+
+with 
+
+```
+<div class="row">
+    <div class="col-md-5">
+        <app-recipe-list></app-recipe-list>
+    </div>
+    <div class="col-md-7">
+        <router-outlet></router-outlet>
+    </div>
+</div>
+```
