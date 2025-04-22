@@ -2394,3 +2394,70 @@ export class RecipeDetailComponent implements OnInit {
 Now we can enter the url http://localhost:4200/recipes/1  or http://localhost:4200/recipes/0 to
 display the recipe detail but clicking on a recipe to display its detail does not work anymore
 
+## Passing dynamic parameters to links
+
+It's now time to fix the link used to select a recipe.
+
+### The RecipeItemComponent
+
+We add the _[routerLink]=[recipeId]_ to use the _relative path_ to the current route
+
+The recipe-item.component.html:
+```
+<a class="list-group-item clearfix"
+  style="cursor: pointer;"
+  [routerLink]="[recipeId]">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+    <p class="list-group-item-text">{{ recipe.description }}</p>
+  </div>
+  <span class="pull-right">
+    <img [src]="recipe.imagePath"
+         alt="{{recipe.name}}"
+         class="img-responsive"
+         style="max-height: 50px;" />
+  </span>
+</a>
+```
+
+The recipe-item.component.ts now has an input recipeId which will be set from the parent component RecipeListComponent:
+```
+import { Component, Input} from '@angular/core';
+import { Recipe } from '../../recipe.model';
+
+@Component({
+  selector: 'app-recipe-item',
+  templateUrl: './recipe-item.component.html',
+  styleUrl: './recipe-item.component.css'
+})
+export class RecipeItemComponent {
+
+  @Input({required:true})
+  recipe!: Recipe;
+
+  @Input({required: true})
+  recipeId!: number;
+
+}
+```
+
+### The RecipeListComponent
+
+the recipe-list.component.html:
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <app-recipe-item *ngFor="let recipeItem of recipes; let i = index"
+      [recipe]="recipeItem"
+      [recipeId]="i"></app-recipe-item>
+  </div>
+</div>
+
+```
+

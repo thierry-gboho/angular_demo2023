@@ -9,7 +9,9 @@ import { Recipe } from '../../recipe.model';
 export class RecipeItemComponent {
 
   @Input({required:true})
-  recipe !: Recipe;
+  recipe!: Recipe;
 
+  @Input({required: true})
+  recipeId!: number;
 
 }
