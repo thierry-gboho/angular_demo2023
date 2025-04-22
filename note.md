@@ -2657,3 +2657,85 @@ export class RecipeEditComponent implements OnInit {
 
 }
 ```
+
+## fixing the links to the edit and creation mode using routerLink in the templates
+
+We use the _routerLink_ to define the url of the links
+
+recipe-list.component.html
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success" [routerLink]="['new']">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <app-recipe-item *ngFor="let recipeItem of recipes; let i = index"
+      [recipe]="recipeItem"
+      [recipeId]="i"></app-recipe-item>
+  </div>
+</div>
+```
+
+recipe-detail.component.html
+```
+<div class="row">
+  <!-- column spanning the whole width -->
+  <div class="col-xs-12">
+    <img [src]="recipe.imagePath"
+        alt="{{recipe.description}}" class="img-responsive"
+        style="max-height: 300px">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <h1>{{recipe.name}}</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <!-- create a dropdown using bootstrap -->
+    <div class="btn-group" appDropdown>
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a (click)="onAddToShoppingList()" style="cursor: pointer;">To Shopping List</a>
+        </li>
+        <li>
+          <!-- current route: recipes/id =>
+                    relative path: edit
+                    absolute path: recipes/id/edit
+          -->
+          <a style="cursor: pointer;" [routerLink]="['edit']">Edit Recipe</a>
+        </li>
+        <li>
+          <a style="cursor: pointer;">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    {{recipe.description}}
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let ingredient of recipe.ingredients">
+        {{ingredient.name}}: {{ingredient.amount}}
+      </li>
+    </ul>
+  </div>
+</div>
+
+```

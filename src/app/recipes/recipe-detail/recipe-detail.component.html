@@ -26,7 +26,11 @@
           <a (click)="onAddToShoppingList()" style="cursor: pointer;">To Shopping List</a>
         </li>
         <li>
-          <a style="cursor: pointer;">Edit Recipe</a>
+          <!-- current route: recipes/id =>
+                    relative path: edit
+                    absolute path: recipes/id/edit
+          -->
+          <a style="cursor: pointer;" [routerLink]="['edit']">Edit Recipe</a>
         </li>
         <li>
           <a style="cursor: pointer;">Delete Recipe</a>
