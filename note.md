@@ -2461,3 +2461,26 @@ the recipe-list.component.html:
 
 ```
 
+## Styling Active recipe items
+
+we simply add _routerLinkActive="active"_ to add the css class _active_ for the current active link and
+remove it from the others.
+
+Our new recipe-item.component.html:
+```
+<a class="list-group-item clearfix"
+  style="cursor: pointer;"
+  routerLinkActive="active"
+  [routerLink]="[recipeId]">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+    <p class="list-group-item-text">{{ recipe.description }}</p>
+  </div>
+  <span class="pull-right">
+    <img [src]="recipe.imagePath"
+         alt="{{recipe.name}}"
+         class="img-responsive"
+         style="max-height: 50px;" />
+  </span>
+</a>
+```
