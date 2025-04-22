@@ -4,6 +4,7 @@ import { RecipesComponent } from "./recipes/recipes.component";
 import { ShoppingListComponent } from "./shopping-list/shopping-list.component";
 import { RecipeStartComponent } from "./recipes/recipe-start/recipe-start.component";
 import { RecipeDetailComponent } from "./recipes/recipe-detail/recipe-detail.component";
+import { RecipeEditComponent } from "./recipes/recipe-edit/recipe-edit.component";
 
 const appRoutes: Routes = [
   {
@@ -18,8 +19,16 @@ const appRoutes: Routes = [
         path: '', component: RecipeStartComponent
       },
       {
+        // path to a new recipe to add: http://localhost:4200/recipes/new
+        path: 'new', component: RecipeEditComponent
+      },
+      {
         // component to load for the url http://localhost:4200/recipes/${id}
         path: ':id', component: RecipeDetailComponent
+      },
+      {
+        // path to edit a recipe
+        path: ':id/edit', component: RecipeEditComponent
       }
     ]
   },

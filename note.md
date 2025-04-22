@@ -2484,3 +2484,85 @@ Our new recipe-item.component.html:
   </span>
 </a>
 ```
+
+# Adding child routing for editing/adding recipes
+
+## The RecipeEditComponent
+
+We create a new component for editing/adding a recipe: RecipeEditComponent
+
+## The AppRoutingModule
+
+### A first attempt to define the child routes for editing/adding a recipe
+
+we add the child routes _new_ and _:id/edit_ to the RecipesComponent as follows:
+
+```
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { RecipesComponent } from "./recipes/recipes.component";
+import { ShoppingListComponent } from "./shopping-list/shopping-list.component";
+import { RecipeStartComponent } from "./recipes/recipe-start/recipe-start.component";
+import { RecipeDetailComponent } from "./recipes/recipe-detail/recipe-detail.component";
+import { RecipeEditComponent } from "./recipes/recipe-edit/recipe-edit.component";
+
+const appRoutes: Routes = [
+  {
+    // the route that is loaded when we first visit the page
+    path: '', redirectTo: '/recipes', pathMatch: "full"
+  },
+  {
+    path: 'recipes', component: RecipesComponent,
+    children: [
+      {
+        // detail component to load for the url http://localhost:4200/recipes/
+        path: '', component: RecipeStartComponent
+      },
+      {
+        // component to load for the url http://localhost:4200/recipes/${id}
+        path: ':id', component: RecipeDetailComponent
+      },
+      {
+        // path to a new recipe to add: http://localhost:4200/recipes/new
+        path: 'new', component: RecipeEditComponent
+      },
+      {
+        // path to edit a recipe
+        path: ':id/edit', component: RecipeEditComponent
+      }
+    ]
+  },
+  {
+    path: 'shopping-list', component: ShoppingListComponent
+  },
+
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot(appRoutes)  // configure the router
+  ],
+  exports: [
+    RouterModule // make the router available to the parent module (i.e. AppModule)
+  ]
+})
+export class AppRoutingModule {
+
+}
+```
+
+When trying to load the url http://localhost:4200/recipes/new we get an error because the routes
+are evaluated in the order they appear in the array. That is, becaus this url matches the pattern
+http://localhost:4200/recipes/${id} and is evaluated as such first and an error occurs because there
+is no recipe with id _new_
+
+```
+The more specific routes need to appear first in the appRoutes array
+```
+
+### Define the child routes using the right order
+
+```
+
+
+```
