@@ -35,4 +35,11 @@ export class RecipesService {
   public addIngredientsToShoppingList(ingredients: Ingredient[]): void {
     this.shoppingListService.addIngredients(ingredients);
   }
+
+  public getRecipeById(id: number) {
+    // As slice is not a deep copy
+    // this.recipes.slice()[id] is equivalent to this.recipes[id]
+    return this.recipes[id];
+
+  }
 }

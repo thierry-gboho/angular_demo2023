@@ -2221,3 +2221,176 @@ with
     </div>
 </div>
 ```
+## Configuring Route parameters
+
+Now loading the RecipeDetailComponent does not work anymore because we use _recipe_ as an input to
+the RecipeDetailComponent and as we're now using routing to load the RecipeDetailComponent, this logic does not work anymore: _recipe_ can no longer be an input. that is, we have to change how we get the _recipe_ here.
+
+Let's have a closer look at the recipe-detail.component.ts file:
+```
+import { Component, Input } from '@angular/core';
+import { Recipe } from '../recipe.model';
+import { RecipesService } from '../recipes.service';
+
+@Component({
+  selector: 'app-recipe-detail',
+  templateUrl: './recipe-detail.component.html',
+  styleUrl: './recipe-detail.component.css'
+})
+export class RecipeDetailComponent {
+
+  @Input({required: true})
+  recipe!: Recipe;
+
+  constructor(private recipesService: RecipesService) {}
+
+  onAddToShoppingList() {
+    this.recipesService.addIngredientsToShoppingList(this.recipe.ingredients);
+  }
+}
+```
+
+The recipe _id_ is passed via the route and can help us get the _recipe_ so we define a method
+in the RecipesService to get the _recipe_ via its id 
+
+### The RecipesService
+
+```
+import { ShoppingListService } from './../shopping-list/shopping-list.service';
+import { Ingredient } from './../shared/ingredient.model';
+import { EventEmitter, Injectable } from "@angular/core";
+import { Recipe } from "./recipe.model";
+
+// add @Injectable to be able to inject a service into this service
+// we want to inject the ShoppingListService into this service
+@Injectable()
+export class RecipesService {
+  onSelectRecipeEvt = new EventEmitter<Recipe>();
+  selectedRecipe?: Recipe;
+
+  private recipes: Recipe[] = [
+    new Recipe('Ratatouille', 'This is a simple test: ratatouille', 'assets/ratatouille.jpg',
+      [new Ingredient('Meat', 1),
+        new Ingredient('Tomatoe', 3)
+      ]
+    ),
+    new Recipe('Flan', 'This is a simple test: flan', 'assets/flan.jpg',
+      [
+        new Ingredient('Meat', 3),
+        new Ingredient('Tomatoe', 5),
+        new Ingredient('Onion', 2)
+      ]
+    )
+  ];
+
+
+  constructor(private shoppingListService: ShoppingListService ){}
+
+  public getRecipes() {
+    return this.recipes.slice(); // return a copy
+  }
+
+  public addIngredientsToShoppingList(ingredients: Ingredient[]): void {
+    this.shoppingListService.addIngredients(ingredients);
+  }
+
+  public getRecipeById(id: number) {
+    // As slice is not a deep copy
+    // this.recipes.slice()[id] is equivalent to this.recipes[id]
+    return this.recipes[id];
+
+  }
+}
+```
+
+### The RecipeItemComponent
+
+recipe-item.component.ts is simplified to:
+```
+import { Component, Input} from '@angular/core';
+import { Recipe } from '../../recipe.model';
+
+@Component({
+  selector: 'app-recipe-item',
+  templateUrl: './recipe-item.component.html',
+  styleUrl: './recipe-item.component.css'
+})
+export class RecipeItemComponent {
+
+  @Input({required:true})
+  recipe !: Recipe;
+
+
+}
+
+```
+
+recipe-item.component.html is simplified to:
+```
+<a class="list-group-item clearfix"
+  style="cursor: pointer;">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+    <p class="list-group-item-text">{{ recipe.description }}</p>
+  </div>
+  <span class="pull-right">
+    <img [src]="recipe.imagePath"
+         alt="{{recipe.name}}"
+         class="img-responsive"
+         style="max-height: 50px;" />
+  </span>
+</a>
+
+```
+
+### The RecipeDetailComponent
+
+recipe-detail.component.ts:
+```
+import { Component, OnInit } from '@angular/core';
+import { Recipe } from '../recipe.model';
+import { RecipesService } from '../recipes.service';
+import { ActivatedRoute, Params } from '@angular/router';
+
+@Component({
+  selector: 'app-recipe-detail',
+  templateUrl: './recipe-detail.component.html',
+  styleUrl: './recipe-detail.component.css'
+})
+export class RecipeDetailComponent implements OnInit {
+
+  recipe!: Recipe;
+  recipeId?: number;
+
+  constructor(private recipesService: RecipesService, private activatedRoute: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    /*
+    * we cannot use
+    *
+    * const id = this.activatedRoute.snapshot.params['id'];
+    *
+    * as it will only work the first time we load the detail component. We want instead
+    * to be able to react to changes in our recipe id and display the correct detail component
+    * for that id => we need to subscribe to the observable activatedRoute.params
+    */
+    this.activatedRoute.params
+      .subscribe(
+        (params: Params) => {
+          // the + sign to convert params['id'] to a number
+          this.recipeId = +params['id'];
+          this.recipe = this.recipesService.getRecipeById(this.recipeId);
+        }
+      )
+  }
+  onAddToShoppingList() {
+    this.recipesService.addIngredientsToShoppingList(this.recipe.ingredients);
+  }
+
+
+}
+```
+
+Now we can enter the url http://localhost:4200/recipes/1  or http://localhost:4200/recipes/0 to
+display the recipe detail but clicking on a recipe to display its detail does not work anymore
+
