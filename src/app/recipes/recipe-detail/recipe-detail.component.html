@@ -30,7 +30,14 @@
                     relative path: edit
                     absolute path: recipes/id/edit
           -->
+          <!--   Using the routerLink to navigate to recipes/id/edit -->
+          <!--
           <a style="cursor: pointer;" [routerLink]="['edit']">Edit Recipe</a>
+          -->
+
+           <!--   Using the router.navigate in the onEditRecipe() method of the
+                        ts file to navigate to recipes/id/edit                   -->
+          <a style="cursor: pointer;" (click)="onEditRecipe()">Edit Recipe</a>
         </li>
         <li>
           <a style="cursor: pointer;">Delete Recipe</a>

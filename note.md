@@ -2739,3 +2739,188 @@ recipe-detail.component.html
 </div>
 
 ```
+## Programmatic Navigation to the edit page
+
+Instead of using _routerLink_ in the templates we'll use the _router.navigate()_ method in the ts file
+to navigate to the appropriate url.
+
+### The RecipeListComponent
+
+we replace the _routerLink_ in the template with a _click listener_. Our template is then changed from
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success" [routerLink]="['new']">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <app-recipe-item *ngFor="let recipeItem of recipes; let i = index"
+      [recipe]="recipeItem"
+      [recipeId]="i"></app-recipe-item>
+  </div>
+</div>
+```
+
+to 
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success" (click)="onNewRecipe()">New Recipe</button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-xs-12">
+    <app-recipe-item *ngFor="let recipeItem of recipes; let i = index"
+      [recipe]="recipeItem"
+      [recipeId]="i"></app-recipe-item>
+  </div>
+</div>
+
+
+```
+
+Then we use the _ActivatedRoute_ and _Router_ in our ts file to navigate to relative to the
+activated route to the url _./new_. Our ts file is then:
+
+```
+import { Component, OnInit } from '@angular/core';
+import { RecipesService } from '../recipes.service';
+import { ActivatedRoute, Router } from '@angular/router';
+
+@Component({
+  selector: 'app-recipe-list',
+  templateUrl: './recipe-list.component.html',
+  styleUrl: './recipe-list.component.css'
+})
+export class RecipeListComponent implements OnInit {
+
+  /*
+  * Inject the router to navigate programmatically to the new route
+  * We also need activatedRoute to inform the router about our current route
+  */
+  constructor(private recipesService: RecipesService, private router: Router,
+    private activatedRoute: ActivatedRoute) {}
+
+  public get recipes() {
+    return this.recipesService.getRecipes();
+  }
+
+  ngOnInit(): void {
+  }
+
+  public onNewRecipe(): void {
+    // we are already on the path /recipe here so we can use a relative route: i.e. navigate to the ./new
+    this.router.navigate(['new'], {relativeTo: this.activatedRoute});
+  }
+
+}
+
+```
+
+### The RecipeDetailComponent
+
+We do the same modif in the RecipeDetailCompoent:
+```
+<div class="row">
+  <!-- column spanning the whole width -->
+  <div class="col-xs-12">
+    <img [src]="recipe.imagePath"
+        alt="{{recipe.description}}" class="img-responsive"
+        style="max-height: 300px">
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <h1>{{recipe.name}}</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <!-- create a dropdown using bootstrap -->
+    <div class="btn-group" appDropdown>
+      <button value="" class="btn btn-primary dropdown-toggle">
+        Manage Recipe <span class="caret"></span>
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a (click)="onAddToShoppingList()" style="cursor: pointer;">To Shopping List</a>
+        </li>
+        <li>
+          <!-- current route: recipes/id =>
+                    relative path: edit
+                    absolute path: recipes/id/edit
+          -->
+          <!--   Using the routerLink to navigate to recipes/id/edit -->
+          <!--
+          <a style="cursor: pointer;" [routerLink]="['edit']">Edit Recipe</a>
+          -->
+
+           <!--   Using the router.navigate in the onEditRecipe() method of the
+                        ts file to navigate to recipes/id/edit                   -->
+          <a style="cursor: pointer;" (click)="onEditRecipe()">Edit Recipe</a>
+        </li>
+        <li>
+          <a style="cursor: pointer;">Delete Recipe</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    {{recipe.description}}
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let ingredient of recipe.ingredients">
+        {{ingredient.name}}: {{ingredient.amount}}
+      </li>
+    </ul>
+  </div>
+</div>
+```
+
+```
+import { Component, OnInit } from '@angular/core';
+import { RecipesService } from '../recipes.service';
+import { ActivatedRoute, Router } from '@angular/router';
+
+@Component({
+  selector: 'app-recipe-list',
+  templateUrl: './recipe-list.component.html',
+  styleUrl: './recipe-list.component.css'
+})
+export class RecipeListComponent implements OnInit {
+
+  /*
+  * Inject the router to navigate programmatically to the new route
+  * We also need activatedRoute to inform the router about our current route
+  */
+  constructor(private recipesService: RecipesService, private router: Router,
+    private activatedRoute: ActivatedRoute) {}
+
+  public get recipes() {
+    return this.recipesService.getRecipes();
+  }
+
+  ngOnInit(): void {
+  }
+
+  public onNewRecipe(): void {
+    // we are already on the path /recipe here so we can use a relative route: i.e. navigate to the ./new
+    this.router.navigate(['new'], {relativeTo: this.activatedRoute});
+  }
+
+}
+
+```
