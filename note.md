@@ -3138,3 +3138,38 @@ export class ShoppingEditComponent {
 
 }
 ```
+
+## Adding validation to the ShopingListEditComponent form
+
+We add the _required_ attribute to the inputs and disable the submit button if the form is not valid:
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form (ngSubmit)="onAddItem(currentForm)" #currentForm="ngForm">
+      ...
+      <input type="text" id="name" class="form-control" name="name" ngModel required />
+      ...
+      <input type="number" id="amount" class="form-control" name="amount" ngModel required />
+      ...
+      <button type="submit" class="btn btn-success" [disabled]="!currentForm.valid">Add</button>
+      ...
+```
+
+## Adding positive amount validation for the amount input
+
+We use the pattern validator: _pattern="^[1-9]+[0-9]*$"_. Note that we are binding to a string so we don't use
+property binding and write _[pattern]="someProperty"_
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form (ngSubmit)="onAddItem(currentForm)" #currentForm="ngForm">
+      ...
+      <input type="text" id="name" class="form-control" name="name" ngModel required />
+      ...
+      input type="number" id="amount" class="form-control" name="amount" ngModel required 
+              pattern="^[1-9]+[0-9]*$" />
+      ...
+      <button type="submit" class="btn btn-success" [disabled]="!currentForm.valid">Add</button>
+      ...
+```

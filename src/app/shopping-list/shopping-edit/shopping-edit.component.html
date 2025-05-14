@@ -12,7 +12,7 @@
 
               Instead we register the control using the name attribute to identify the control and ngModel
             -->
-            <input type="text" id="name" class="form-control" name="name" ngModel />
+            <input type="text" id="name" class="form-control" name="name" ngModel required />
 
          </div>
 
@@ -25,7 +25,8 @@
 
                 Instead we register the control using the name attribute to identify the control and ngModel
             -->
-            <input type="number" id="amount" class="form-control" name="amount" ngModel />
+            <input type="number" id="amount" class="form-control" name="amount" ngModel required
+              pattern="^[1-9]+[0-9]*$" />
          </div>
 
 
@@ -40,7 +41,7 @@
                 <!-- Get rid of the click listener (click)="onAddItem()
                   <button type="submit" class="btn btn-success" (click)="onAddItem()">Add</button>
                 -->
-                <button type="submit" class="btn btn-success">Add</button>
+                <button type="submit" class="btn btn-success" [disabled]="!currentForm.valid">Add</button>
                 <button type="button" class="btn btn-danger">Delete</button>
                 <button type="reset" class="btn btn-primary">Clear</button>
             </div>
