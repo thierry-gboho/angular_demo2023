@@ -2930,3 +2930,106 @@ export class RecipeListComponent implements OnInit {
 When you use _Angular observables_ such as _this.route.params_ you don't need to clean up as Angular will unsubscribe automatically for you.
 
 But if you create your _own_ observables you'll have to clean up by unsubscribing manually
+
+## Improving the Reactive Service with Observables (Subjects)
+
+1. Replace EventEmitter from services with the better pattern _Subject_ from rxjs
+```
+import { EventEmitter } from "@angular/core";
+import { Ingredient } from "../shared/ingredient.model";
+import { Subject } from 'rxjs';
+
+export class ShoppingListService {
+
+  // Step 1: Replace EventEmitter with the better pattern Subject
+  // updatedIngredientsEvt = new EventEmitter<Ingredient[]>();
+  updatedIngredientsSubject = new Subject<Ingredient[]>();
+
+  ingredients: Ingredient[] = [
+        new Ingredient('Apples', 5),
+        new Ingredient('Tomatoes', 10)
+      ];
+
+  getIngredients(): Ingredient[] {
+    return this.ingredients.slice(); // return a copy
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+    // this.updatedIngredientsEvt.emit(this.ingredients.slice());
+    this.updatedIngredientsSubject.next(this.ingredients.slice());
+  }
+
+  addIngredients(ingredients: Ingredient[]): void {
+    /**
+     * This is a viable option but it will emit a lot of events. It won't be bad
+     * because even a recipe with 30 ingredients won't blow up our app but still there are
+     * lots of unecessary event emissions. So even though it's a viable option, we'll comment
+     * it out
+     */
+    // for (let Ingredient of this.ingredients) {
+    //  this.addIngredient(Ingredient);
+    // }
+
+    /*
+    * A different and better option would be to directly add all our ingredients in one go
+    * and then emit our event.
+    *
+    * We use the spread operator to push all our ingredients to the ingredients array
+    * That is, we use the fact that push can take a list of values. For exemple
+    * myNumberArray.push(3, 5, 7);
+    */
+    this.ingredients.push(...ingredients);
+
+    // emit the event
+    // this.updatedIngredientsEvt.emit(this.ingredients.slice());
+    this.updatedIngredientsSubject.next(this.ingredients.slice());
+  }
+
+}
+
+```
+2. store the subscription in a variable so that you can clean it up
+
+```
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Ingredient } from '../shared/ingredient.model';
+import { ShoppingListService } from './shopping-list.service';
+import { Subscription } from 'rxjs';
+
+@Component({
+  selector: 'app-shopping-list',
+  templateUrl: './shopping-list.component.html',
+  styleUrl: './shopping-list.component.css'
+})
+export class ShoppingListComponent implements OnInit, OnDestroy {
+
+  ingredients!: Ingredient[];
+
+   // Step 2: store the subscription in a variable so that you can clean it up (i.e. unsubscribe)
+  private ingredientChangeSubscription!: Subscription;
+
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  ngOnInit(): void {
+    this.ingredients = this.shoppingListService.getIngredients();
+
+    /*
+    this.shoppingListService.updatedIngredientsEvt.subscribe(
+        (ingredients: Ingredient[]) => this.ingredients = ingredients);
+    */
+    this.ingredientChangeSubscription =
+      this.shoppingListService.updatedIngredientsSubject.subscribe(
+        (ingredients: Ingredient[]) => this.ingredients = ingredients);
+
+
+  }
+
+  ngOnDestroy(): void {
+    this.ingredientChangeSubscription?.unsubscribe();
+  }
+
+
+}
+
+```
