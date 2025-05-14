@@ -3033,3 +3033,108 @@ export class ShoppingListComponent implements OnInit, OnDestroy {
 }
 
 ```
+
+# Using the template driven approach for the forms
+
+## The ShoppingListEditComponent form
+
+1. We get rid of the local references _#nameInput_ and _#amountInput_
+2. We also get rid of the click listener _(click)="onAddItem()_ on the submit button. 
+
+```
+Instead of using the click listener on the submit button, we want
+to use _ngSubmit_ to submit the form when the submit button is clicked.
+We also place a local reference on the form element and set it equals to ngForm: _#f="ngForm"_ to have access to the javascript object Angular creates behind the scene
+```
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form (ngSubmit)="onAddItem(currentForm)" #currentForm="ngForm">
+      <div class="row">
+        <!-- column spanning a width of 5. On small devices it should span the whole width -->
+         <div class="col-sm-5 form-group">
+            <label for="name">Name</label>
+
+            <!-- We get rid of the local reference _#nameInput_
+              <input type="text" id="name" class="form-control"
+                    #nameInput />
+
+              Instead we register the control using the name attribute to identify the control and ngModel
+            -->
+            <input type="text" id="name" class="form-control" name="name" ngModel />
+
+         </div>
+
+         <!-- column spanning a width of 2 -->
+         <div class="col-sm-2 form-group">
+            <label for="amount">Amount</label>
+            <!-- We get rid of the local reference _#amountInput_
+              <input type="number" id="amount" class="form-control"
+                  #amountInput />
+
+                Instead we register the control using the name attribute to identify the control and ngModel
+            -->
+            <input type="number" id="amount" class="form-control" name="amount" ngModel />
+         </div>
+
+
+         <div class="row">
+             <!-- col spanning the whole width -->
+            <div class="col-xs-12">
+                <!--
+                    btn-succes:  green
+                    btn--danger: red
+                    btn-primary: blue
+                -->
+                <!-- Get rid of the click listener (click)="onAddItem()
+                  <button type="submit" class="btn btn-success" (click)="onAddItem()">Add</button>
+                -->
+                <button type="submit" class="btn btn-success">Add</button>
+                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="reset" class="btn btn-primary">Clear</button>
+            </div>
+         </div>
+      </div>
+    </form>
+  </div>
+</div>
+```
+
+The typescript file is then updated to:
+```
+import { ShoppingListService } from './../shopping-list.service';
+import { Component } from '@angular/core';
+import { Ingredient } from '../../shared/ingredient.model';
+import { NgForm } from '@angular/forms';
+
+@Component({
+  selector: 'app-shopping-edit',
+  templateUrl: './shopping-edit.component.html',
+  styleUrl: './shopping-edit.component.css'
+})
+export class ShoppingEditComponent {
+
+  /* We can remove the ViewChild which was used to retrieve to the template ref #nameInpput and #amountInput
+     as these template ref have been removed
+  @ViewChild('nameInput')
+  nameInputRef?: ElementRef;
+
+  @ViewChild('amountInput')
+  amountInputRef?: ElementRef;
+  */
+
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  onAddItem(editForm: NgForm): void {
+    /*
+    const name = this.nameInputRef?.nativeElement.value;
+    const amount = this.amountInputRef?.nativeElement.value;
+    */
+    const value = editForm.value;
+    const ingredient = new Ingredient(value.name, value.amount);
+    this.shoppingListService.addIngredient(ingredient);
+  }
+
+}
+```
