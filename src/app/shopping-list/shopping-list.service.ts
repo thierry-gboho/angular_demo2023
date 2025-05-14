@@ -8,7 +8,10 @@ export class ShoppingListService {
   // updatedIngredientsEvt = new EventEmitter<Ingredient[]>();
   updatedIngredientsSubject = new Subject<Ingredient[]>();
 
-  ingredients: Ingredient[] = [
+  // will emit when we're editing a shopping item
+  indexOfShoppingItemBeingEdited = new Subject<number>();
+
+  private ingredients: Ingredient[] = [
         new Ingredient('Apples', 5),
         new Ingredient('Tomatoes', 10)
       ];
