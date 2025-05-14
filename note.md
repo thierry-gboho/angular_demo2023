@@ -2924,3 +2924,9 @@ export class RecipeListComponent implements OnInit {
 }
 
 ```
+
+## Note about obsevables
+
+When you use _Angular observables_ such as _this.route.params_ you don't need to clean up as Angular will unsubscribe automatically for you.
+
+But if you create your _own_ observables you'll have to clean up by unsubscribing manually
