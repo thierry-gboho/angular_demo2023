@@ -1,5 +1,5 @@
 import { ShoppingListService } from './../shopping-list.service';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Ingredient } from '../../shared/ingredient.model';
 import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -11,18 +11,14 @@ import { Subscription } from 'rxjs';
 })
 export class ShoppingEditComponent implements OnInit , OnDestroy{
 
-  /* We can remove the ViewChild which was used to retrieve to the template ref #nameInpput and #amountInput
-     as these template ref have been removed
-  @ViewChild('nameInput')
-  nameInputRef?: ElementRef;
-
-  @ViewChild('amountInput')
-  amountInputRef?: ElementRef;
-  */
+  /* Access the form */
+  @ViewChild('currentForm')
+  shoppingEditForm!: NgForm;
 
   editMode = false;
   indexOfItemBeingEdited: number | undefined;
   indexOfItemBeingEditedSubscription$!: Subscription;
+  ingredientBeingEdited: Ingredient | undefined;
 
   constructor(private shoppingListService: ShoppingListService) {}
 
@@ -32,6 +28,13 @@ export class ShoppingEditComponent implements OnInit , OnDestroy{
         (index: number) => {
           this.editMode = true;
           this.indexOfItemBeingEdited = index;
+          this.ingredientBeingEdited = this.shoppingListService.getIngredient(index);
+
+          // populate the form with the right values
+          this.shoppingEditForm.setValue({
+            name: this.ingredientBeingEdited.name,
+            amount:  this.ingredientBeingEdited.amount
+          });
         }
       );
   }
