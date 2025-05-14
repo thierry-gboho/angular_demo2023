@@ -43,7 +43,7 @@ export class ShoppingEditComponent implements OnInit , OnDestroy{
     this.indexOfItemBeingEditedSubscription$.unsubscribe();
   }
 
-  onAddItem(editForm: NgForm): void {
+  onAddOrUpdateIngredient(editForm: NgForm): void {
     /*
     const name = this.nameInputRef?.nativeElement.value;
     const amount = this.amountInputRef?.nativeElement.value;
@@ -54,6 +54,9 @@ export class ShoppingEditComponent implements OnInit , OnDestroy{
       this.shoppingListService.updateIngredient(this.indexOfItemBeingEdited, ingredient);
     else
       this.shoppingListService.addIngredient(ingredient);
+
+    this.editMode = false;
+    editForm.reset();
   }
 
 }
