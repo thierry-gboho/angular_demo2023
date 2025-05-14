@@ -35,6 +35,11 @@ export class ShoppingListService {
     this.updatedIngredientsSubject.next(this.ingredients.slice());
   }
 
+  deleteIngredient(index: number) {
+    this.ingredients.splice(index, 1);
+    this.updatedIngredientsSubject.next(this.ingredients.slice());
+  }
+
   addIngredients(ingredients: Ingredient[]): void {
     /**
      * This is a viable option but it will emit a lot of events. It won't be bad
