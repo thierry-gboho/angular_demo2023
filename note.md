@@ -3173,3 +3173,79 @@ property binding and write _[pattern]="someProperty"_
       <button type="submit" class="btn btn-success" [disabled]="!currentForm.valid">Add</button>
       ...
 ```
+
+# Using the reactive approach for the forms
+## Adding the RecipeEditComponent form template
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form>
+      <div class="row">
+        <div class="col-xs-12">
+          <button class="btn btn-success">Save</button>
+          <button class="btn btn-danger">Cancel</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="imagePath">Image URL</label>
+            <input type="text" id="imagePath" class="form-control">
+          </div>
+        </div>
+      </div>
+      <!-- A row for the image preview -->
+       <div class="row">
+        <div class="col-xs-12">
+          <img src="" alt="recipe image" class="img-responsive">
+        </div>
+       </div>
+
+       <!-- Description of the recipe -->
+        <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea type="text" id="description" class="form-control" rows="6">
+              </textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- A row for the ingredients -->
+       <div class="row">
+        <div class="col-xs-12">
+          <!-- For one ingredient: will be made into a list of rows later for a list of ingredients -->
+          <div class="row">
+            <div class="col-xs-8">
+              <!-- ingredient name -->
+              <input type="text "class="form-control">
+            </div>
+            <div class="col-xs-2">
+               <!-- amount using a small width -->
+               <input type="number" class="form-control">
+            </div>
+            <div class="col-xs-2">
+               <!-- the button to delete the ingredient using a small width -->
+                <button class="btn btn-danger">X</button>
+            </div>
+          </div>
+        </div>
+       </div>
+
+    </form>
+  </div>
+</div>
+```
+
+
