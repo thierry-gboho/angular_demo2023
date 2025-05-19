@@ -3455,3 +3455,163 @@ In the template, you can then use:
 *ngFor="let ingredientCtrl of controls; let i = index"
 
 This adjustment is required due to the way TS works and Angular parses your templates (it doesn't understand TS there).
+
+## Adding ingredient controls to a form array
+
+```
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormControl, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Params } from '@angular/router';
+import { RecipesService } from '../recipes.service';
+
+@Component({
+  selector: 'app-recipe-edit',
+  templateUrl: './recipe-edit.component.html',
+  styleUrl: './recipe-edit.component.css'
+})
+export class RecipeEditComponent implements OnInit {
+  id: number | null = null;
+  editMode!: boolean;
+  recipeForm!: FormGroup;
+
+  constructor(private activatedRoute: ActivatedRoute, private recipesService: RecipesService) {}
+
+  get controls() { // a getter!
+      return (<FormArray>this.recipeForm.get('ingredients')).controls;
+    }
+
+  ngOnInit(): void {
+    this.activatedRoute.params.subscribe(
+      (params: Params) => {
+        const idString = params['id'];
+        if (idString != null) {
+          this.editMode = true;
+          this.id = +idString;
+        } else {
+          this.editMode = false;
+          this.id = null;
+        }
+        this.initForm();
+        console.log('EditMode: ' + this.editMode);
+      }
+    )
+  }
+
+  onSubmit(): void {
+    console.log(this.recipeForm);
+  }
+
+  private initForm() {
+    let recipeName = '';
+    let recipeImagePath = '';
+    let recipeDescription = '';
+    // notice how we must pass the type of the form array
+    let recipeIngredients = new FormArray<FormGroup<
+      {
+        name: FormControl<string|null>,
+        amount: FormControl<number|null>
+      }>>([]);
+
+    if (this.id != null) {
+      // we are in edit mode
+      const recipe = this.recipesService.getRecipeById(this.id);
+      recipeName = recipe.name;
+      recipeImagePath = recipe.imagePath;
+      recipeDescription = recipe.description;
+      if (recipe['ingredients']) {
+        for (let ingredient of recipe.ingredients) {
+          recipeIngredients.push(
+            new FormGroup({
+            'name': new FormControl(ingredient.name),
+            'amount': new FormControl(ingredient.amount)
+          }));
+        }
+      }
+    }
+
+    // register the form controls
+    this.recipeForm = new FormGroup({
+      'name': new FormControl(recipeName),
+      'imagePath': new FormControl(recipeImagePath),
+      'description': new FormControl(recipeDescription),
+      'ingredients': recipeIngredients
+    })
+
+  }
+
+}
+```
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-xs-12">
+          <button type="submit" class="btn btn-success">Save</button>
+          <button type="button" class="btn btn-danger">Cancel</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control" formControlName="name">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="imagePath">Image URL</label>
+            <input type="text" id="imagePath" class="form-control" formControlName="imagePath">
+          </div>
+        </div>
+      </div>
+      <!-- A row for the image preview -->
+       <div class="row">
+        <div class="col-xs-12">
+          <img src="" alt="recipe image" class="img-responsive">
+        </div>
+       </div>
+
+       <!-- Description of the recipe -->
+        <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea type="text" id="description" class="form-control" rows="6" formControlName="description">
+              </textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- A row for the ingredients -->
+       <div class="row">
+        <div class="col-xs-12" formArrayName="ingredients">
+          <!-- For one ingredient: will be made into a list of rows later for a list of ingredients -->
+          <div class="row"
+            *ngFor="let ingredientCtrl of controls; let i = index"
+            [formGroupName]="i">
+            <div class="col-xs-8">
+              <!-- ingredient name -->
+              <input type="text "class="form-control" formControlName="name">
+            </div>
+            <div class="col-xs-2">
+               <!-- amount using a small width -->
+               <input type="number" class="form-control" formControlName="amount">
+            </div>
+            <div class="col-xs-2">
+               <!-- the button to delete the ingredient using a small width -->
+                <button class="btn btn-danger">X</button>
+            </div>
+          </div>
+        </div>
+       </div>
+
+    </form>
+  </div>
+</div>
+
+```

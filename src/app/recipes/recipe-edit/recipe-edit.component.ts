@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
 import { RecipesService } from '../recipes.service';
 
@@ -15,16 +15,20 @@ export class RecipeEditComponent implements OnInit {
 
   constructor(private activatedRoute: ActivatedRoute, private recipesService: RecipesService) {}
 
+  get controls() { // a getter!
+      return (<FormArray>this.recipeForm.get('ingredients')).controls;
+    }
+
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(
       (params: Params) => {
         const idString = params['id'];
         if (idString != null) {
           this.editMode = true;
-          this.id = null;
+          this.id = +idString;
         } else {
           this.editMode = false;
-          this.id = +idString;
+          this.id = null;
         }
         this.initForm();
         console.log('EditMode: ' + this.editMode);
@@ -40,6 +44,12 @@ export class RecipeEditComponent implements OnInit {
     let recipeName = '';
     let recipeImagePath = '';
     let recipeDescription = '';
+    // notice how we must pass the type of the form array
+    let recipeIngredients = new FormArray<FormGroup<
+      {
+        name: FormControl<string|null>,
+        amount: FormControl<number|null>
+      }>>([]);
 
     if (this.id != null) {
       // we are in edit mode
@@ -47,13 +57,23 @@ export class RecipeEditComponent implements OnInit {
       recipeName = recipe.name;
       recipeImagePath = recipe.imagePath;
       recipeDescription = recipe.description;
+      if (recipe['ingredients']) {
+        for (let ingredient of recipe.ingredients) {
+          recipeIngredients.push(
+            new FormGroup({
+            'name': new FormControl(ingredient.name),
+            'amount': new FormControl(ingredient.amount)
+          }));
+        }
+      }
     }
 
     // register the form controls
     this.recipeForm = new FormGroup({
       'name': new FormControl(recipeName),
       'imagePath': new FormControl(recipeImagePath),
-      'description': new FormControl(recipeDescription)
+      'description': new FormControl(recipeDescription),
+      'ingredients': recipeIngredients
     })
 
   }
