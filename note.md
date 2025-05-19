@@ -3248,4 +3248,191 @@ property binding and write _[pattern]="someProperty"_
 </div>
 ```
 
+## Creating the Form for Editing Recipes: Registering controls in the ts file
+
+```
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+import { ActivatedRoute, Params } from '@angular/router';
+import { RecipesService } from '../recipes.service';
+
+@Component({
+  selector: 'app-recipe-edit',
+  templateUrl: './recipe-edit.component.html',
+  styleUrl: './recipe-edit.component.css'
+})
+export class RecipeEditComponent implements OnInit {
+  id: number | null = null;
+  editMode!: boolean;
+  recipeForm!: FormGroup;
+
+  constructor(private activatedRoute: ActivatedRoute, private recipesService: RecipesService) {}
+
+  ngOnInit(): void {
+    this.activatedRoute.params.subscribe(
+      (params: Params) => {
+        const idString = params['id'];
+        if (idString != null) {
+          this.editMode = true;
+          this.id = null;
+        } else {
+          this.editMode = false;
+          this.id = +idString;
+        }
+        this.initForm();
+        console.log('EditMode: ' + this.editMode);
+      }
+    )
+  }
+
+  onSubmit(): void {
+    console.log(this.recipeForm);
+  }
+
+  private initForm() {
+    let recipeName = '';
+    let recipeImagePath = '';
+    let recipeDescription = '';
+
+    if (this.id != null) {
+      // we are in edit mode
+      const recipe = this.recipesService.getRecipeById(this.id);
+      recipeName = recipe.name;
+      recipeImagePath = recipe.imagePath;
+      recipeDescription = recipe.description;
+    }
+
+    // register the form controls
+    this.recipeForm = new FormGroup({
+      'name': new FormControl(recipeName),
+      'imagePath': new FormControl(recipeImagePath),
+      'description': new FormControl(recipeDescription)
+    })
+
+  }
+
+}
+
+```
+## Syncing HTML with the form
+
+As we are now using the _reactive_ approach we need to import the _ReactiveFormsModule_. Our new _app.module.ts_:
+
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+import { ShoppingListService } from './shopping-list/shopping-list.service';
+import { AppRoutingModule } from './app-routing.module';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AppRoutingModule
+  ],
+  providers: [ShoppingListService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+
+With the _ReactiveFormsModule_ imported, we now have access to the corresponding directives in the
+template (for example the _formGroup_ and _formControl_ directives). We now sync our template with our ts file
+using the _reactive_ directives: _formGroup_ and _fromControlName_
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-xs-12">
+          <button type="submit" class="btn btn-success">Save</button>
+          <button type="button" class="btn btn-danger">Cancel</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" class="form-control" formControlName="name">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="imagePath">Image URL</label>
+            <input type="text" id="imagePath" class="form-control" formControlName="imagePath">
+          </div>
+        </div>
+      </div>
+      <!-- A row for the image preview -->
+       <div class="row">
+        <div class="col-xs-12">
+          <img src="" alt="recipe image" class="img-responsive">
+        </div>
+       </div>
+
+       <!-- Description of the recipe -->
+        <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea type="text" id="description" class="form-control" rows="6" formControlName="description">
+              </textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- A row for the ingredients -->
+       <div class="row">
+        <div class="col-xs-12">
+          <!-- For one ingredient: will be made into a list of rows later for a list of ingredients -->
+          <div class="row">
+            <div class="col-xs-8">
+              <!-- ingredient name -->
+              <input type="text "class="form-control">
+            </div>
+            <div class="col-xs-2">
+               <!-- amount using a small width -->
+               <input type="number" class="form-control">
+            </div>
+            <div class="col-xs-2">
+               <!-- the button to delete the ingredient using a small width -->
+                <button class="btn btn-danger">X</button>
+            </div>
+          </div>
+        </div>
+       </div>
+
+    </form>
+  </div>
+</div>
+
+```
+
 
