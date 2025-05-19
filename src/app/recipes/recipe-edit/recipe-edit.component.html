@@ -48,7 +48,8 @@
           <!-- For one ingredient: will be made into a list of rows later for a list of ingredients -->
           <div class="row"
             *ngFor="let ingredientCtrl of controls; let i = index"
-            [formGroupName]="i">
+            [formGroupName]="i"
+            style="margin-top: 10px;">
             <div class="col-xs-8">
               <!-- ingredient name -->
               <input type="text "class="form-control" formControlName="name">
@@ -60,6 +61,12 @@
             <div class="col-xs-2">
                <!-- the button to delete the ingredient using a small width -->
                 <button class="btn btn-danger">X</button>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-xs-12">
+              <button type="button" class="btn btn-success" (click)="onAddIngredient()">Add Ingredient</button>
             </div>
           </div>
         </div>
