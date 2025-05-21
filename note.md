@@ -3888,3 +3888,99 @@ input.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched {
   border: 1px solid red;
 }
 ```
+
+## Submitting the form
+
+We add the _addRecipe_ and _updateRecipe_ methods to the _recipes.service.ts_ file:
+```
+import { ShoppingListService } from './../shopping-list/shopping-list.service';
+import { Ingredient } from './../shared/ingredient.model';
+import { EventEmitter, Injectable } from "@angular/core";
+import { Recipe } from "./recipe.model";
+
+// add @Injectable to be able to inject a service into this service
+// we want to inject the ShoppingListService into this service
+@Injectable()
+export class RecipesService {
+  onSelectRecipeEvt = new EventEmitter<Recipe>();
+  selectedRecipe?: Recipe;
+
+  ...
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+  }
+
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
+  }
+}
+```
+
+### Submitting the form: approach 1
+
+We create the new/updated recipe in the _onSubmit_ method and call the appropriate service method
+either to add or update a recipe:
+
+```
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Params } from '@angular/router';
+import { RecipesService } from '../recipes.service';
+import { Recipe } from '../recipe.model';
+
+@Component({
+  selector: 'app-recipe-edit',
+  templateUrl: './recipe-edit.component.html',
+  styleUrl: './recipe-edit.component.css'
+})
+export class RecipeEditComponent implements OnInit {
+  id: number | null = null;
+  editMode!: boolean;
+  recipeForm!: FormGroup;
+
+  constructor(private activatedRoute: ActivatedRoute, private recipesService: RecipesService) {}
+
+  get controls() { // a getter!
+      return (<FormArray>this.recipeForm.get('ingredients')).controls;
+    }
+
+  ngOnInit(): void {
+    this.activatedRoute.params.subscribe(
+      (params: Params) => {
+        const idString = params['id'];
+        if (idString != null) {
+          this.editMode = true;
+          this.id = +idString;
+        } else {
+          this.editMode = false;
+          this.id = null;
+        }
+        this.initForm();
+        console.log('EditMode: ' + this.editMode);
+      }
+    )
+  }
+
+  onSubmit(): void {
+    const newrecipe = new Recipe(
+      this.recipeForm.value['name'],
+      this.recipeForm.value['description'],
+      this.recipeForm.value['imagePath'],
+      this.recipeForm.value['ingredients']
+    )
+    if (this.id != null) {
+      // we are in editMode
+      this.recipesService.updateRecipe(this.id, newrecipe);
+    } else {
+      this.recipesService.addRecipe(newrecipe);
+    }
+  }
+
+  ...
+
+}
+
+```
+
+
