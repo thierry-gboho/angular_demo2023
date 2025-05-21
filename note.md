@@ -4038,5 +4038,77 @@ Solution: provide the RecipeService in the app root
 We now provide the _RecipeService_ in the app root using the _providers_ array in the app.module.ts ratehr than the
 _providers_ array in the _RecipesComponent_.
 
+## Deleting Ingredient lines in the RecipeEditComponent
 
+We update the _recipe.edit.component.html_ to call _onDeleteIngredient(i)_ where i is the FormArray index
 
+```
+<!-- A row for the ingredients -->
+       <div class="row">
+        <div class="col-xs-12" formArrayName="ingredients">
+          <!-- For one ingredient: will be made into a list of rows later for a list of ingredients -->
+          <div class="row"
+            *ngFor="let ingredientCtrl of controls; let i = index"
+            [formGroupName]="i"
+            style="margin-top: 10px;">
+            <div class="col-xs-8">
+              <!-- ingredient name -->
+              <input type="text "class="form-control" formControlName="name">
+            </div>
+            <div class="col-xs-2">
+               <!-- amount using a small width -->
+               <input type="number" class="form-control" formControlName="amount">
+            </div>
+            <div class="col-xs-2">
+               <!-- the button to delete the ingredient using a small width -->
+                <button class="btn btn-danger" (click)="onDeleteIngredient(i)">X</button>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-xs-12">
+              <button type="button" class="btn btn-success" (click)="onAddIngredient()">Add Ingredient</button>
+            </div>
+          </div>
+        </div>
+       </div>
+```
+
+Then in the _recipe.edit.component.ts_ we add the _onDeleteIngredient(index: number)_ method:
+
+```
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { RecipesService } from '../recipes.service';
+import { Recipe } from '../recipe.model';
+
+@Component({
+  selector: 'app-recipe-edit',
+  templateUrl: './recipe-edit.component.html',
+  styleUrl: './recipe-edit.component.css'
+})
+export class RecipeEditComponent implements OnInit {
+  id: number | null = null;
+  editMode!: boolean;
+  recipeForm!: FormGroup;
+
+  constructor(private activatedRoute: ActivatedRoute, private recipesService: RecipesService,
+    private router: Router
+  ) {}
+
+  ...
+
+  onCancel() {
+    // we navigate away
+    this.router.navigate(['../'], {relativeTo: this.activatedRoute});
+  }
+
+  onDeleteIngredient(index: number) {
+    // we simply remove the line from the UI
+    (<FormArray>this.recipeForm.get('ingredients')).removeAt(index);
+  }
+
+}
+
+```
