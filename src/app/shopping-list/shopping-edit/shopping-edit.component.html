@@ -1,0 +1,55 @@
+<div class="row">
+  <div class="col-xs-12">
+    <form (ngSubmit)="onAddOrUpdateIngredient(currentForm)" #currentForm="ngForm">
+      <div class="row">
+        <!-- column spanning a width of 5. On small devices it should span the whole width -->
+         <div class="col-sm-5 form-group">
+            <label for="name">Name</label>
+
+            <!-- We get rid of the local reference _#nameInput_
+              <input type="text" id="name" class="form-control"
+                    #nameInput />
+
+              Instead we register the control using the name attribute to identify the control and ngModel
+            -->
+            <input type="text" id="name" class="form-control" name="name" ngModel required />
+
+         </div>
+
+         <!-- column spanning a width of 2 -->
+         <div class="col-sm-2 form-group">
+            <label for="amount">Amount</label>
+            <!-- We get rid of the local reference _#amountInput_
+              <input type="number" id="amount" class="form-control"
+                  #amountInput />
+
+                Instead we register the control using the name attribute to identify the control and ngModel
+            -->
+            <input type="number" id="amount" class="form-control" name="amount" ngModel required
+              pattern="^[1-9]+[0-9]*$" />
+         </div>
+
+
+         <div class="row">
+             <!-- col spanning the whole width -->
+            <div class="col-xs-12">
+                <!--
+                    btn-succes:  green
+                    btn--danger: red
+                    btn-primary: blue
+                -->
+                <!-- Get rid of the click listener (click)="onAddItem()
+                  <button type="submit" class="btn btn-success" (click)="onAddItem()">Add</button>
+                -->
+                <button type="submit" class="btn btn-success" [disabled]="!currentForm.valid">
+                  {{ editMode ? 'Update' : 'Add' }}
+                </button>
+                <button type="button" class="btn btn-danger" *ngIf="editMode"
+                  (click)="onDelete()">Delete</button>
+                <button type="reset" class="btn btn-primary" (click)="onClear()">Clear</button>
+            </div>
+         </div>
+      </div>
+    </form>
+  </div>
+</div>
