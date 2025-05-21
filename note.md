@@ -4122,3 +4122,160 @@ As of Angular 8+, there's a new way of clearing all items in a FormArray.
 The clear() method automatically loops through all registered FormControls (or FormGroups) in the FormArray and removes them.
 
 It's like manually creating a loop and calling removeAt() for every item.
+
+
+# http request part 1
+
+## import the HttpClientModule into the app.module to be able to inject HttpClient
+
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+import { ShoppingListService } from './shopping-list/shopping-list.service';
+import { AppRoutingModule } from './app-routing.module';
+import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
+import { RecipesService } from './recipes/recipes.service';
+
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    RecipeEditComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    AppRoutingModule
+
+  ],
+  providers: [ShoppingListService, RecipesService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+
+We use the HttpClient to send the request to the backend:
+```
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { RecipesService } from "../recipes/recipes.service";
+
+/**
+ * The Injectable decorator is optional but is required as soon as you want to inject a service into this service
+ */
+
+@Injectable({providedIn: 'root'})
+export class DataStorageService {
+
+  private urlRecipes = "http://localhost:8080/recipes";
+
+  constructor(private httpClient: HttpClient, private recipesService: RecipesService) {}
+
+  storeRecipes() {
+    const recipes =  this.recipesService.getRecipes();
+
+    this.httpClient.post(this.urlRecipes, recipes)
+      .subscribe(
+        response => console.log(response)
+      );
+  }
+
+  fetchRecipes() {
+    this.httpClient.get(this.urlRecipes)
+      .subscribe(
+        response => console.log(response)
+      )
+  }
+}
+
+```
+
+1. note that we subscribe in the service. The alternative is to return the observable and subscribe in the component
+that uses the service. To implement a spinner while waiting for the response the 2nd approach (i.e. subscribing in the
+component) should be used instead
+2. As HttpClient is provided by Angular we don't have to manually clean up once we're done (i.e. Angular will unsubscribe automatically)
+
+We then use our service to request data from the backend or store data to the backend:
+
+Our updated _HeaderComponent_:
+
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li routerLinkActive="active"><a routerLink="/recipes" style="cursor: pointer;">Recipes</a></li>
+                <li routerLinkActive="active"><a routerLink="/shopping-list" style="cursor: pointer;">Shopping List</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a style="cursor: pointer;" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a style="cursor: pointer;" (click)="onSaveData()">Save Data</a></li>
+                        <li><a style="cursor: pointer;" (click)="onFetchData()">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+```
+
+```
+import { DataStorageService } from './../shared/data-storage.service';
+import { Component, EventEmitter, Output } from "@angular/core";
+
+@Component({
+    selector: 'app-header',
+    templateUrl: './header.component.html'
+})
+export class HeaderComponent {
+
+  @Output()
+  featureSelected = new EventEmitter<string>();
+
+  constructor(private dataStorageService: DataStorageService) {}
+  onSelect(feature: string): void {
+    this.featureSelected.emit(feature);
+  }
+
+
+
+  onSaveData() {
+    this.dataStorageService.storeRecipes();
+  }
+
+  onFetchData() {
+    this.dataStorageService.fetchRecipes();
+  }
+
+}
+```
