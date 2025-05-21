@@ -3793,3 +3793,98 @@ export class RecipeEditComponent implements OnInit {
 </div>
 ```
 
+## Adding built-in validators to validate the user input
+
+We change the _onAddIngredient()_ and _iniForm()_ methods by adding the built-in validators _required_ and _pattern_
+as shown below:
+
+```
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Params } from '@angular/router';
+import { RecipesService } from '../recipes.service';
+
+@Component({
+  selector: 'app-recipe-edit',
+  templateUrl: './recipe-edit.component.html',
+  styleUrl: './recipe-edit.component.css'
+})
+export class RecipeEditComponent implements OnInit {
+  ...
+  onAddIngredient() {
+    (<FormArray>this.recipeForm.get('ingredients')).push(
+      new FormGroup({
+        // set the default value to null and add the validators
+        'name': new FormControl(null, Validators.required),
+        'amount': new FormControl(null, [
+                                  Validators.required,
+                                  Validators.pattern(/^[1-9]+[1-9]*$/)
+                                ])
+      })
+    );
+  }
+  private initForm() {
+      let recipeName = '';
+      let recipeImagePath = '';
+      let recipeDescription = '';
+      // notice how we must pass the type of the form array
+      let recipeIngredients = new FormArray<FormGroup<
+        {
+          name: FormControl<string|null>,
+          amount: FormControl<number|null>
+        }>>([]);
+
+      if (this.id != null) {
+        // we are in edit mode
+        const recipe = this.recipesService.getRecipeById(this.id);
+        recipeName = recipe.name;
+        recipeImagePath = recipe.imagePath;
+        recipeDescription = recipe.description;
+        if (recipe['ingredients']) {
+          for (let ingredient of recipe.ingredients) {
+            recipeIngredients.push(
+              new FormGroup({
+              'name': new FormControl(ingredient.name, Validators.required),
+              'amount': new FormControl(ingredient.amount, [
+                              Validators.required, Validators.pattern(/^[1-9]+[0-9]*$/)
+                            ])
+            }));
+          }
+        }
+      }
+
+      // register the form controls
+      this.recipeForm = new FormGroup({
+        'name': new FormControl(recipeName, Validators.required),
+        'imagePath': new FormControl(recipeImagePath, Validators.required),
+        'description': new FormControl(recipeDescription, Validators.required),
+        'ingredients': recipeIngredients
+      })
+
+    }
+}
+```
+
+
+We disable the save button if the form is not valid:
+
+```
+<div class="row">
+  <div class="col-xs-12">
+    <form [formGroup]="recipeForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-xs-12">
+          <button type="submit" class="btn btn-success" [disabled]="!recipeForm.valid">Save</button>
+          <button type="button" class="btn btn-danger">Cancel</button>
+        </div>
+      </div>
+      ...
+```
+
+Finally we set up the css to have the invalid fields (input or textarea) that have been touched displayed
+with red borders:
+```
+input.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched {
+  border: 1px solid red;
+}
+```
