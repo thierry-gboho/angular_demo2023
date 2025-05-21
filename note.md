@@ -3983,4 +3983,19 @@ export class RecipeEditComponent implements OnInit {
 
 ```
 
+### Submitting the form: approoach 2
+
+As the _value_ of our _html form_ has exactly the same format as our _Recipe_ model, our onSubmit method
+can be simplified to use the form value as follows:
+
+```
+onSubmit(): void {
+    if (this.id != null) {
+      // we are in editMode
+      this.recipesService.updateRecipe(this.id, this.recipeForm.value);
+    } else {
+      this.recipesService.addRecipe(newrecipe);
+    }
+  }
+```
 
