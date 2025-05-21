@@ -4022,3 +4022,21 @@ Our _edit.component.html_ contains the following updates:
        </div>
 ```
 
+## Providing the Recipe service correctly
+
+Because we provide our _RecipeService_ in the _RecipesComponent_, all the components of a given RecipeComponents instance
+share the same _RecipeService_ 
+
+But if we navigate away from the recipes to the shopping list, our RecipeComponents is destroyed and so is the associated _RecipeService_.
+Then navigating back to the recipes we get a new RecipeComponents instance which is associated with a new
+_RecipeService_. As a result all the modifications made in the now destroyed RecipeComponents are lost as we are now using a different instance of the RecipeService
+
+```
+Solution: provide the RecipeService in the app root
+```
+
+We now provide the _RecipeService_ in the app root using the _providers_ array in the app.module.ts ratehr than the
+_providers_ array in the _RecipesComponent_.
+
+
+
