@@ -3999,3 +3999,26 @@ onSubmit(): void {
   }
 ```
 
+## Adding the image preview
+
+We use a template reference _imagePath_ on the url input.We then access this reference value the display the preview:
+Our _edit.component.html_ contains the following updates:
+
+```
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="imagePath">Image URL</label>
+            <input type="text" id="imagePath" class="form-control" formControlName="imagePath"
+                #imagePath>
+          </div>
+        </div>
+      </div>
+      <!-- A row for the image preview -->
+       <div class="row">
+        <div class="col-xs-12">
+          <img [src]="imagePath.value" alt="recipe image" class="img-responsive">
+        </div>
+       </div>
+```
+
