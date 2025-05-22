@@ -35,11 +35,11 @@ public class Ingredient implements Serializable {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Ingredient that = (Ingredient) o;
-    return Objects.equals(id, that.id);
+    return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(amount, that.amount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(id);
+    return Objects.hash(id, name, amount);
   }
 }

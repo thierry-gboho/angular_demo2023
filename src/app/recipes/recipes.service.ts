@@ -54,4 +54,8 @@ export class RecipesService {
   deleteRecipe(index: number) {
     this.recipes.splice(index, 1);
   }
+
+  setRecipes(recipes: Recipe[]) {
+    this.recipes = recipes;
+  }
 }

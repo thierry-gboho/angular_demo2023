@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { RecipesService } from "../recipes/recipes.service";
+import { Recipe } from "../recipes/recipe.model";
 
 /**
  * The Injectable decorator is optional but is required as soon as you want to inject a service into this service
@@ -23,9 +24,13 @@ export class DataStorageService {
   }
 
   fetchRecipes() {
-    this.httpClient.get(this.urlRecipes)
+    // To use the setRecipes we need to specify the type of the response data received from our http:
+    this.httpClient.get<Recipe[]>(this.urlRecipes)
       .subscribe(
-        response => console.log(response)
+        response => {
+          console.log(response);
+          this.recipesService.setRecipes(response);
+        }
       )
   }
 }

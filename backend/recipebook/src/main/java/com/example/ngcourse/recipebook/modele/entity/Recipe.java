@@ -29,7 +29,7 @@ public class Recipe implements Serializable {
   private String imagePath;
 
   @Setter
-  @OneToMany
+  @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   Set<Ingredient> ingredients;
 
   public Recipe(String name, String description, String imagePath, Set<Ingredient> ingredients) {
