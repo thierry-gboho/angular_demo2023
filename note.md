@@ -4598,3 +4598,78 @@ _Note:_
 1. The default button type is _submit_ so we have to explicitly specify _type="button"_ for the second button
 so that Angular does not submit the form when that button is clicked.
 2. For the first button, although it is not required we explicitly specified _type="submit"_. The reason do so would be to  easily see or retrieve the submit button. 
+
+# Handling the AuthComponent form input
+
+We use the _template driven_ approach:
+
+## The updated ath.component.html
+
+```
+<div class="row">
+  <div class="col-xs-12 col-md-6 col-md-offset-3">
+    <form #authForm="ngForm" (ngSubmit)="onSubmit(authForm)">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          ngModel
+          name="email"
+          required email
+          />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          ngModel
+          name="password"
+          required minlength="6"
+          />
+      </div>
+      <p class="inline-block-right">
+        <button type="submit" class="btn btn-primary width-150 btn-shape-s1"
+        [disabled]="!authForm.valid">{{loginMode ? 'Login' : 'Sign Up'}}</button>
+      </p>
+      <p class="inline-block-right">
+        <button type="button" class="btn btn-primary width-150 btn-shape-s1" (click)="onSwitchMode()">
+          Switch to {{!loginMode ? 'Login' : 'Sign Up'}}
+        </button>
+      </p>
+    </form>
+  </div>
+</div>
+
+```
+
+## The updated auth.component.ts
+
+```
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+
+@Component({
+  selector: 'app-auth',
+  templateUrl: './auth.component.html',
+  styleUrl: './auth.component.css'
+})
+export class AuthComponent {
+
+  loginMode = true;
+
+  onSwitchMode() {
+    this.loginMode = !this.loginMode;
+  }
+
+  onSubmit(authForm: NgForm) {
+    console.log(authForm.value);
+    authForm.reset();
+
+  }
+
+}
+```
