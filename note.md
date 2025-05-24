@@ -4541,3 +4541,60 @@ export class AppRoutingModule {
 </nav>
 
 ```
+# Switching between Auth modes
+
+We add a property _loginMode_ to the _AuthComponent_ which is _true_ when we are in _Login mode_ and
+_false_ when we are in _Sign-up mode_
+
+## The updated auth.component.ts
+
+```
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-auth',
+  templateUrl: './auth.component.html',
+  styleUrl: './auth.component.css'
+})
+export class AuthComponent {
+
+  loginMode = true;
+
+  onSwitchMode() {
+    this.loginMode = !this.loginMode;
+  }
+
+}
+```
+
+## The updated auth.component.html
+
+```
+<div class="row">
+  <div class="col-xs-12 col-md-6 col-md-offset-3">
+    <form>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" class="form-control">
+      </div>
+      <p class="inline-block-right">
+        <button type="submit" class="btn btn-primary width-150 btn-shape-s1">{{loginMode ? 'Login' : 'Sign Up'}}</button>
+      </p>
+      <p class="inline-block-right">
+        <button type="button" class="btn btn-primary width-150 btn-shape-s1" (click)="onSwitchMode()">
+          Switch to {{loginMode ? 'Login' : 'Sign Up'}}
+        </button>
+      </p>
+    </form>
+  </div>
+</div>
+```
+
+_Note:_ 
+1. The default button type is _submit_ so we have to explicitly specify _type="button"_ for the second button
+so that Angular does not submit the form when that button is clicked.
+2. For the first button, although it is not required we explicitly specified _type="submit"_. The reason do so would be to  easily see or retrieve the submit button. 

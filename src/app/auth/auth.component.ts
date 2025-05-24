@@ -7,4 +7,10 @@ import { Component } from '@angular/core';
 })
 export class AuthComponent {
 
+  loginMode = true;
+
+  onSwitchMode() {
+    this.loginMode = !this.loginMode;
+  }
+
 }
