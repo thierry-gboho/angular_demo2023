@@ -4279,3 +4279,265 @@ export class HeaderComponent {
 
 }
 ```
+
+## Fetching recipes
+
+From our log we can see that the response from clicking on _fetch data_ is:
+
+```
+[
+    {
+        "id": 1,
+        "name": "Ratatouille",
+        "description": "This is a simple test: ratatouille",
+        "imagePath": "assets/ratatouille.jpg",
+        "ingredients": [
+            {
+                "id": 1,
+                "name": "Meat",
+                "amount": 1
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Flan",
+        "description": "This is a simple test: flan",
+        "imagePath": "assets/flan.jpg",
+        "ingredients": [
+            {
+                "id": 2,
+                "name": "Meat",
+                "amount": 3
+            }
+        ]
+    }
+]
+```
+
+# Adding The Auth page
+
+We add the _AuthComponent_ and the associated route _/auth_. This component will be used to sign up or login.
+
+## The AuthComponent
+
+### auth.component.ts
+
+```
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-auth',
+  templateUrl: './auth.component.html',
+  styleUrl: './auth.component.css'
+})
+export class AuthComponent {
+
+}
+
+```
+
+### auth.component.html
+
+```
+<div class="row">
+  <div class="col-xs-12 col-md-6 col-md-offset-3">
+    <form>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" class="form-control">
+      </div>
+      <p class="inline-block-right">
+        <button class="btn btn-primary width-150 btn-shape-s1">Sign Up</button>
+      </p>
+      <p class="inline-block-right">
+        <button class="btn btn-primary width-150 btn-shape-s1">Switch to Login</button>
+      </p>
+    </form>
+  </div>
+</div>
+
+```
+
+### auth.component.css
+
+```
+.inline-block-right {
+  display: inline-block;
+  text-align: right;
+}
+
+.width-150 {
+  width: 150px;
+}
+.right-border {
+  border-right: 1px solid black;
+}
+.right-space::after {
+  content: "\00a0";
+}
+.left-space::before {
+  content: "\00a0";
+}
+.left-border {
+  border-left: 1px solid black;
+}
+
+.btn-shape-s1 {
+  padding-left: 1px;
+  padding-right: 1px;
+  border-radius: 5px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+```
+
+### Declare the AuthComponent in the app.module.ts
+
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+import { ShoppingListService } from './shopping-list/shopping-list.service';
+import { AppRoutingModule } from './app-routing.module';
+import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
+import { RecipesService } from './recipes/recipes.service';
+import { AuthComponent } from './auth/auth.component';
+
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    RecipeEditComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective,
+    AuthComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    AppRoutingModule
+
+  ],
+  providers: [ShoppingListService, RecipesService],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+
+## Define the route _/auth_ in app-routing.module.ts
+
+```
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes } from "@angular/router";
+import { RecipesComponent } from "./recipes/recipes.component";
+import { ShoppingListComponent } from "./shopping-list/shopping-list.component";
+import { RecipeStartComponent } from "./recipes/recipe-start/recipe-start.component";
+import { RecipeDetailComponent } from "./recipes/recipe-detail/recipe-detail.component";
+import { RecipeEditComponent } from "./recipes/recipe-edit/recipe-edit.component";
+import { RecipesResolverService } from "./recipes/recipes-resolver.service";
+import { AuthComponent } from "./auth/auth.component";
+
+const appRoutes: Routes = [
+  {
+    // the route that is loaded when we first visit the page
+    path: '', redirectTo: '/recipes', pathMatch: "full"
+  },
+  {
+    path: 'recipes', component: RecipesComponent,
+    children: [
+      {
+        // detail component to load for the url http://localhost:4200/recipes/
+        path: '', component: RecipeStartComponent
+      },
+      {
+        // path to a new recipe to add: http://localhost:4200/recipes/new
+        path: 'new', component: RecipeEditComponent
+      },
+      {
+        // component to load for the url http://localhost:4200/recipes/${id}
+        path: ':id', component: RecipeDetailComponent, resolve: [RecipesResolverService]
+      },
+      {
+        // path to edit a recipe
+        path: ':id/edit', component: RecipeEditComponent, resolve: [RecipesResolverService]
+      }
+    ]
+  },
+  {
+    path: 'shopping-list', component: ShoppingListComponent
+  },
+  {
+    path: 'auth', component: AuthComponent
+  }
+
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot(appRoutes)  // configure the router
+  ],
+  exports: [
+    RouterModule // make the router available to the parent module (i.e. AppModule)
+  ]
+})
+export class AppRoutingModule {
+
+}
+
+```
+
+## Add a link to the _/auth_ route in the header.component.html
+
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li routerLinkActive="active"><a routerLink="/recipes" style="cursor: pointer;">Recipes</a></li>
+                <li routerLinkActive="active"><a routerLink="/shopping-list" style="cursor: pointer;">Shopping List</a></li>
+                <li routerLinkActive="active"><a routerLink="/auth" style="cursor: pointer;">Authenticate</a></li>
+              </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown" appDropdown>
+                    <a style="cursor: pointer;" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a style="cursor: pointer;" (click)="onSaveData()">Save Data</a></li>
+                        <li><a style="cursor: pointer;" (click)="onFetchData()">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+```
