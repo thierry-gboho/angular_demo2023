@@ -4673,3 +4673,336 @@ export class AuthComponent {
 
 }
 ```
+
+# Signing up a user
+
+## The AuthService and AuthResponseData
+
+
+The AuthResponseData represents the response obrained from the backend when we sign up:
+
+```
+export interface AuthResponseData {
+  kind: string;
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+}
+```
+
+We add the auth.seervice.ts to sign up and login
+
+The current code contains the sign up method which returns an observable so that we can later add a loading spinner
+
+```
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AuthResponseData } from './auth.response.data';
+
+
+
+@Injectable({providedIn: 'root'})
+export class AuthService {
+
+  private signupUrl = "http://localhost:8080/signup";
+
+  constructor(private httpClient: HttpClient) {}
+
+  signup(email: string, password: string): Observable<AuthResponseData> {
+    return this.httpClient.post<AuthResponseData>(this.signupUrl,
+      {
+        email: email,
+        password: password,
+        returnSecureToken: true
+      }
+    );
+  }
+}
+```
+
+## The AuthComponent
+
+```
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { AuthService } from './auth.service';
+
+@Component({
+  selector: 'app-auth',
+  templateUrl: './auth.component.html',
+  styleUrl: './auth.component.css'
+})
+export class AuthComponent {
+
+  loginMode = true;
+
+  constructor(private authService: AuthService) {}
+
+  onSwitchMode() {
+    this.loginMode = !this.loginMode;
+  }
+
+  onSubmit(authForm: NgForm) {
+
+    console.log(authForm.value);
+
+    if (! authForm.valid) return;
+
+    if (this.loginMode) {
+      // TODO
+    } else {
+      const email = authForm.value.email;
+      const password = authForm.value.password;
+      this.authService.signup(email, password).subscribe(
+        responseData => {
+          console.log(responseData);
+        },
+        error => {
+          console.log(error);
+        }
+      );
+    }
+
+    authForm.reset();
+
+  }
+
+}
+```
+
+## Adding a loading spinner
+
+Using google search for _css loading spinners_. You' ll find in the search result _loadin.io_ which is a page
+where you'll find lots of beautiful loading spinners. On that page we select a specific loading spinner and copy
+its css and template in our LoadingSpinnerComponent:
+
+1. Copy the template into the loading-spinner.component.ts
+
+```
+import { Component } from "@angular/core";
+
+
+@Component({
+  selector: 'app-loading-spinner',
+  standalone: false,
+  template: `<div class="lds-roller">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>`,
+  styleUrl: './loading-spinner.component.css'
+})
+export class LoadingSpinnerComponent {
+
+}
+```
+2. copy the css into the loading-spinner.component.css
+
+```
+.lds-roller {
+  /* change color here */
+  color: #2102cf;
+}
+.lds-roller,
+.lds-roller div,
+.lds-roller div:after {
+  box-sizing: border-box;
+}
+.lds-roller {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-roller div {
+  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  transform-origin: 40px 40px;
+}
+.lds-roller div:after {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 7.2px;
+  height: 7.2px;
+  border-radius: 50%;
+  background: currentColor;
+  margin: -3.6px 0 0 -3.6px;
+}
+.lds-roller div:nth-child(1) {
+  animation-delay: -0.036s;
+}
+.lds-roller div:nth-child(1):after {
+  top: 62.62742px;
+  left: 62.62742px;
+}
+.lds-roller div:nth-child(2) {
+  animation-delay: -0.072s;
+}
+.lds-roller div:nth-child(2):after {
+  top: 67.71281px;
+  left: 56px;
+}
+.lds-roller div:nth-child(3) {
+  animation-delay: -0.108s;
+}
+.lds-roller div:nth-child(3):after {
+  top: 70.90963px;
+  left: 48.28221px;
+}
+.lds-roller div:nth-child(4) {
+  animation-delay: -0.144s;
+}
+.lds-roller div:nth-child(4):after {
+  top: 72px;
+  left: 40px;
+}
+.lds-roller div:nth-child(5) {
+  animation-delay: -0.18s;
+}
+.lds-roller div:nth-child(5):after {
+  top: 70.90963px;
+  left: 31.71779px;
+}
+.lds-roller div:nth-child(6) {
+  animation-delay: -0.216s;
+}
+.lds-roller div:nth-child(6):after {
+  top: 67.71281px;
+  left: 24px;
+}
+.lds-roller div:nth-child(7) {
+  animation-delay: -0.252s;
+}
+.lds-roller div:nth-child(7):after {
+  top: 62.62742px;
+  left: 17.37258px;
+}
+.lds-roller div:nth-child(8) {
+  animation-delay: -0.288s;
+}
+.lds-roller div:nth-child(8):after {
+  top: 56px;
+  left: 12.28719px;
+}
+@keyframes lds-roller {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+```
+3. update the auth.component.html and auth.component.ts to use the spinner the sign-up is in progress
+
+```
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { AuthService } from './auth.service';
+
+@Component({
+  selector: 'app-auth',
+  templateUrl: './auth.component.html',
+  styleUrl: './auth.component.css'
+})
+export class AuthComponent {
+
+  loginMode = true;
+  loadingInProcess = false;
+  error: string | null = null;
+
+  constructor(private authService: AuthService) {}
+
+  onSwitchMode() {
+    this.loginMode = !this.loginMode;
+  }
+
+  onSubmit(authForm: NgForm) {
+
+    console.log(authForm.value);
+
+    if (! authForm.valid) return;
+
+    this.loadingInProcess = true;
+    if (this.loginMode) {
+      // TODO
+    } else {
+      const email = authForm.value.email;
+      const password = authForm.value.password;
+      this.authService.signup(email, password).subscribe(
+        responseData => {
+          console.log(responseData);
+          this.loadingInProcess = false;
+        },
+        error => {
+          console.log(error);
+          this.error = 'An error occurred!';
+          this.loadingInProcess = false;
+        }
+      );
+    }
+
+    authForm.reset();
+
+  }
+
+}
+
+```
+
+```
+<div class="row">
+  <div class="col-xs-12 col-md-6 col-md-offset-3">
+    <div class="alert alert-danger" *ngIf="error">
+      <p>{{error}}</p>
+    </div>
+    <div *ngIf="loadingInProcess" style="text-align: center;">
+      <app-loading-spinner></app-loading-spinner>
+    </div>
+    <form #authForm="ngForm" (ngSubmit)="onSubmit(authForm)"
+      *ngIf="!loadingInProcess">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          ngModel
+          name="email"
+          required email
+          />
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          ngModel
+          name="password"
+          required minlength="6"
+          />
+      </div>
+      <p class="inline-block-right">
+        <button type="submit" class="btn btn-primary width-150 btn-shape-s1"
+        [disabled]="!authForm.valid">{{loginMode ? 'Login' : 'Sign Up'}}</button>
+      </p>
+      <p class="inline-block-right">
+        <button type="button" class="btn btn-primary width-150 btn-shape-s1" (click)="onSwitchMode()">
+          Switch to {{!loginMode ? 'Login' : 'Sign Up'}}
+        </button>
+      </p>
+    </form>
+  </div>
+</div>
+
+```
+
