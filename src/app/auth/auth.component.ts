@@ -36,9 +36,10 @@ export class AuthComponent {
           console.log(responseData);
           this.loadingInProcess = false;
         },
-        error => {
-          console.log(error);
-          this.error = 'An error occurred!';
+        /* Now in the service we extract the filter out the error message */
+        errorMessage => {
+          console.log(errorMessage);
+          this.error = errorMessage;
           this.loadingInProcess = false;
         }
       );
