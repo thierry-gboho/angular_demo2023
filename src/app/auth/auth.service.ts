@@ -1,8 +1,9 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, Subject, throwError } from 'rxjs';
 import { AuthResponseData } from './auth.response.data';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
+import { User } from './user.model';
 
 
 
@@ -11,6 +12,9 @@ export class AuthService {
 
   private signupUrl = "http://localhost:8080/signup";
   private loginUrl = "http://localhost:8080/connexion";
+
+  // store the user in a subject
+  user = new Subject<User>();
 
   constructor(private httpClient: HttpClient) {}
 
@@ -23,7 +27,13 @@ export class AuthService {
       }
     )
     .pipe(
-      catchError(this.handleError)
+      catchError(this.handleError),
+      tap((responseData: AuthResponseData)  => this.handleAuthentication(responseData.email,
+                                                                responseData.localId,
+                                                                responseData.idToken,
+                                                                +responseData.expiresIn)
+
+      )
     )
   }
 
@@ -36,7 +46,13 @@ export class AuthService {
         "returnSecureToken": true
       }
     ).pipe(
-      catchError(this.handleError)
+      catchError(this.handleError),
+      tap((responseData: AuthResponseData)  => this.handleAuthentication(responseData.email,
+                                                                responseData.localId,
+                                                                responseData.idToken,
+                                                                +responseData.expiresIn)
+
+      )
     )
   }
 
@@ -55,5 +71,20 @@ export class AuthService {
           }
         }
         return throwError(errorMessage);
+  }
+
+  private handleAuthentication(email: string, localId: string, token: string, expiresIn: number) {
+      // generate the expiration date in ms as it is not part of the response and
+      // is therfore not in this function input params
+        const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+
+        const user = new User(
+          email,
+          localId,
+          token,
+          expirationDate);
+
+        // store the user data using our subject
+        this.user.next(user);
   }
 }
