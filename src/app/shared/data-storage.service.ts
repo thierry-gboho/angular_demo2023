@@ -23,10 +23,31 @@ export class DataStorageService {
   storeRecipes() {
     const recipes =  this.recipesService.getRecipes();
 
-    this.httpClient.post(this.urlRecipes, recipes)
-      .subscribe(
-        // response => console.log(response)
-      );
+    this.authService.user.pipe(
+      take(1),
+      /*
+      Use exhaustMap to wait for the user observable above to complete which will happen after we take the latest user
+      as we specified take(1)
+      Then we'll have access to that user in exhaustMap
+      we then return a new observable from within exhaustMap which will be the new observable which will be the new observable
+      in subsequent operators
+      */
+      exhaustMap(user => {
+        // we now add the token in the request header
+
+        // we now return the observable so that the interested party can subscribe to it
+        // To use the setRecipes we need to specify the type of the response data received from our http:
+        return this.httpClient.post(
+            this.urlRecipes,
+            recipes,
+            {
+              headers: {
+                'Authorization': 'Bearer ' + user?.token
+              }
+            });
+      })
+
+    ).subscribe();
   }
 
   fetchRecipes() {
