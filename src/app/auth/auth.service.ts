@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { AuthResponseData } from './auth.response.data';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from './user.model';
+import { Router } from '@angular/router';
 
 
 
@@ -17,7 +18,7 @@ export class AuthService {
   // user = new Subject<User>();
   user = new BehaviorSubject<User | null>(null);  // it needs to be initialized with the first inital value
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: HttpClient, private router: Router) {}
 
   signup(email: string, password: string): Observable<AuthResponseData> {
     return this.httpClient.post<AuthResponseData>(this.signupUrl,
@@ -91,5 +92,10 @@ export class AuthService {
         this.user.next(user);
 
 
+  }
+
+  logout() {
+    this.user.next(null);
+    this.router.navigate(['/auth']);
   }
 }

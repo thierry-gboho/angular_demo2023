@@ -6015,3 +6015,202 @@ import { AuthInterceptorService } from './auth/auth-interceptor.service';
 export class AppModule { }
 
 ```
+
+# Adding logout
+
+```
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { AuthResponseData } from './auth.response.data';
+import { catchError, tap } from 'rxjs/operators';
+import { User } from './user.model';
+import { Router } from '@angular/router';
+
+
+
+@Injectable({providedIn: 'root'})
+export class AuthService {
+
+  private signupUrl = "http://localhost:8080/signup";
+  private loginUrl = "http://localhost:8080/connexion";
+
+  // store the user in a subject
+  // user = new Subject<User>();
+  user = new BehaviorSubject<User | null>(null);  // it needs to be initialized with the first inital value
+
+  constructor(private httpClient: HttpClient, private router: Router) {}
+
+  signup(email: string, password: string): Observable<AuthResponseData> {
+    return this.httpClient.post<AuthResponseData>(this.signupUrl,
+      {
+        email: email,
+        password: password,
+        returnSecureToken: true
+      }
+    )
+    .pipe(
+      catchError(this.handleError),
+      tap((responseData: AuthResponseData)  => this.handleAuthentication(responseData.email,
+                                                                responseData.localId,
+                                                                responseData.idToken,
+                                                                +responseData.expiresIn)
+
+      )
+    )
+  }
+
+  login(email: string, password: string): Observable<AuthResponseData> {
+    return this.httpClient.post<AuthResponseData>(
+      this.loginUrl,
+      {
+        "email": email,
+        "password": password,
+        "returnSecureToken": true
+      }
+    ).pipe(
+      catchError(this.handleError),
+      tap((responseData: AuthResponseData)  => this.handleAuthentication(responseData.email,
+                                                                responseData.localId,
+                                                                responseData.idToken,
+                                                                +responseData.expiresIn)
+
+      )
+    )
+  }
+
+  private handleError(errorRes: HttpErrorResponse) {
+      let errorMessage = "An unknown error occured";
+        if (!errorRes.error || !errorRes.error.detail) {
+          return throwError(errorMessage);
+        }
+
+        if (errorRes.error.status == 400) {
+          if (errorRes.error.instance == "/signup") {
+              errorMessage = errorRes.error.detail;
+          }
+          if (errorRes.error.instance == "/connexion") {
+              errorMessage = errorRes.error.detail;
+          }
+        }
+        return throwError(errorMessage);
+  }
+
+  // Redirection to a new route once the user is authenticated can be done here in handleAuthentication
+  //  or in the auth.component.ts file inside of subscribe
+  private handleAuthentication(email: string, localId: string, token: string, expiresIn: number) {
+      // generate the expiration date in ms as it is not part of the response and
+      // is therfore not in this function input params
+        const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+
+        const user = new User(
+          email,
+          localId,
+          token,
+          expirationDate);
+
+        // store the user data using our subject
+        this.user.next(user);
+
+
+  }
+
+  logout() {
+    this.user.next(null);
+    this.router.navigate(['/auth']);
+  }
+}
+```
+
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                 <!-- disable this link if we are not logged in -->
+                <li routerLinkActive="active" *ngIf="authenticated">
+                  <a routerLink="/recipes" style="cursor: pointer;">Recipes</a></li>
+
+                <li routerLinkActive="active"><a routerLink="/shopping-list" style="cursor: pointer;">Shopping List</a></li>
+
+                 <!-- disable this link if we are logged in -->
+                <li routerLinkActive="active" *ngIf="!authenticated">
+                  <a routerLink="/auth" style="cursor: pointer;">Authenticate</a></li>
+              </ul>
+            <ul class="nav navbar-nav navbar-right">
+               <!-- add a logout button  which is disabled is we are not logged in -->
+              <li *ngIf="authenticated">
+                <a style="cursor: pointer;" (click)="onLogout()">Logout</a>
+              </li>
+                <!-- disable the dropdown if we are not logged in -->
+                <li class="dropdown" appDropdown *ngIf="authenticated">
+                    <a style="cursor: pointer;" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a style="cursor: pointer;" (click)="onSaveData()">Save Data</a></li>
+                        <li><a style="cursor: pointer;" (click)="onFetchData()">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+```
+import { Subscription } from 'rxjs';
+import { AuthService } from './../auth/auth.service';
+import { DataStorageService } from './../shared/data-storage.service';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from "@angular/core";
+
+@Component({
+    selector: 'app-header',
+    templateUrl: './header.component.html'
+})
+export class HeaderComponent implements OnInit, OnDestroy {
+
+  @Output()
+  featureSelected = new EventEmitter<string>();
+
+  private userSubscription!: Subscription;
+  authenticated = false;
+
+  constructor(private dataStorageService: DataStorageService, private authService: AuthService) {}
+  onSelect(feature: string): void {
+    this.featureSelected.emit(feature);
+  }
+
+  ngOnInit(): void {
+    this.userSubscription = this.authService.user.subscribe(
+      user => {
+        /*
+        if  the user is null he is not authenticated:
+        we use the contracted form
+            this.authenticated = !!user;
+          which is equivalent to
+            this.authenticated = !user ? false : true;
+        */
+       this.authenticated = !!user;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription.unsubscribe();
+  }
+
+  onSaveData() {
+    this.dataStorageService.storeRecipes();
+  }
+
+  onFetchData() {
+    this.dataStorageService.fetchRecipes().subscribe();
+  }
+
+  onLogout() {
+    this.authService.logout();
+  }
+
+}
+```

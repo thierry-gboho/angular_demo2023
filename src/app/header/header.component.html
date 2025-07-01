@@ -19,7 +19,7 @@
             <ul class="nav navbar-nav navbar-right">
                <!-- add a logout button  which is disabled is we are not logged in -->
               <li *ngIf="authenticated">
-                <a style="cursor: pointer;">Logout</a>
+                <a style="cursor: pointer;" (click)="onLogout()">Logout</a>
               </li>
                 <!-- disable the dropdown if we are not logged in -->
                 <li class="dropdown" appDropdown *ngIf="authenticated">
