@@ -73,6 +73,8 @@ export class AuthService {
         return throwError(errorMessage);
   }
 
+  // Redirection to a new route once the user is authenticated can be done here in handleAuthentication
+  //  or in the auth.component.ts file inside of subscribe
   private handleAuthentication(email: string, localId: string, token: string, expiresIn: number) {
       // generate the expiration date in ms as it is not part of the response and
       // is therfore not in this function input params
@@ -86,5 +88,7 @@ export class AuthService {
 
         // store the user data using our subject
         this.user.next(user);
+
+
   }
 }

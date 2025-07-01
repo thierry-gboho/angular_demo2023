@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AuthService } from './auth.service';
@@ -15,7 +16,7 @@ export class AuthComponent {
   loadingInProcess = false;
   error: string | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onSwitchMode() {
     this.loginMode = !this.loginMode;
@@ -44,6 +45,10 @@ export class AuthComponent {
         responseData => {
           console.log(responseData);
           this.loadingInProcess = false;
+
+          // Redirection to a new route once the user is authenticated could also have been done
+          //  in the auth.service.ts file inside of handleAuthentication
+          this.router.navigate(['/recipes']);
         },
         /* Now in the service we extract the filter out the error message */
         errorMessage => {
