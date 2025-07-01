@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { AuthResponseData } from './auth.response.data';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from './user.model';
@@ -14,7 +14,8 @@ export class AuthService {
   private loginUrl = "http://localhost:8080/connexion";
 
   // store the user in a subject
-  user = new Subject<User>();
+  // user = new Subject<User>();
+  user = new BehaviorSubject<User | null>(null);  // it needs to be initialized with the first inital value
 
   constructor(private httpClient: HttpClient) {}
 
