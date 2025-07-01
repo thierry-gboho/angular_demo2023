@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { AuthResponseData } from './auth.response.data';
@@ -23,37 +23,7 @@ export class AuthService {
       }
     )
     .pipe(
-      catchError(errorRes => {
-        /* here we have an HttpErrorResponse. If we console log it we'll get something like
-        HttpErrorResponse {
-            error: {
-              "type": "about:blank",
-              "title": "Bad Request",
-              "status": 400,
-              "detail": "user 'test@yahoo.fr' already exists",
-              "instance": "/signup"
-            },
-            headers: _HttpHeaders {normalizedNames: Map(0), lazyUpdate: null, lazyInit: ƒ},
-            message: "Http failure response for http://localhost:8080/signup: 400 OK",
-            name: "HttpErrorResponse",
-            ok: false,
-            status: 400,
-            statusText: "OK",
-            url: "http://localhost:8080/signup"
-         }
-        */
-
-         let errorMessage = "An unknown error occured";
-         if (!errorRes.error || !errorRes.error.detail) {
-          return throwError(errorMessage);
-         }
-
-         if (errorRes.error.instance == "/signup" && errorRes.error.status == 400) {
-            errorMessage = errorRes.error.detail;
-          }
-          return throwError(errorMessage);
-
-      })
+      catchError(this.handleError)
     )
   }
 
@@ -66,37 +36,24 @@ export class AuthService {
         "returnSecureToken": true
       }
     ).pipe(
-      catchError(errorRes => {
-        /* here we have an HttpErrorResponse. If we console log it we'll get something like
-        HttpErrorResponse {
-            error: {
-              "type": "about:blank",
-              "title": "Bad Request",
-              "status": 400,
-              "detail": "user 'test@yahoo.fr' already exists",
-              "instance": "/signup"
-            },
-            headers: _HttpHeaders {normalizedNames: Map(0), lazyUpdate: null, lazyInit: ƒ},
-            message: "Http failure response for http://localhost:8080/signup: 400 OK",
-            name: "HttpErrorResponse",
-            ok: false,
-            status: 400,
-            statusText: "OK",
-            url: "http://localhost:8080/signup"
-         }
-        */
-
-         let errorMessage = "An unknown error occured";
-         if (!errorRes.error || !errorRes.error.detail) {
-          return throwError(errorMessage);
-         }
-
-         if (errorRes.error.instance == "/connexion" && errorRes.error.status == 400) {
-            errorMessage = errorRes.error.detail;
-          }
-          return throwError(errorMessage);
-
-      })
+      catchError(this.handleError)
     )
+  }
+
+  private handleError(errorRes: HttpErrorResponse) {
+      let errorMessage = "An unknown error occured";
+        if (!errorRes.error || !errorRes.error.detail) {
+          return throwError(errorMessage);
+        }
+
+        if (errorRes.error.status == 400) {
+          if (errorRes.error.instance == "/signup") {
+              errorMessage = errorRes.error.detail;
+          }
+          if (errorRes.error.instance == "/connexion") {
+              errorMessage = errorRes.error.detail;
+          }
+        }
+        return throwError(errorMessage);
   }
 }
