@@ -5834,3 +5834,184 @@ or equivalently
 ```
 
 
+# Adding the token with an interceptor
+
+Instead of manually adding the token to each outgoing request it is better to user an interceptor to add
+it to each outgoing request
+
+## simplify the data-storage.service.ts
+
+We don't add the token in that service anymore:
+
+```
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { RecipesService } from "../recipes/recipes.service";
+import { Recipe } from "../recipes/recipe.model";
+import { map, tap } from "rxjs/operators";
+
+/**
+ * The Injectable decorator is optional but is required as soon as you want to inject a service into this service
+ */
+
+@Injectable({providedIn: 'root'})
+export class DataStorageService {
+
+  private urlRecipes = "http://localhost:8080/recipes";
+
+  constructor(
+    private httpClient: HttpClient,
+    private recipesService: RecipesService
+  ) {}
+
+  storeRecipes() {
+    const recipes =  this.recipesService.getRecipes();
+
+    this.httpClient.post(
+            this.urlRecipes,
+            recipes
+    ).subscribe();
+  }
+
+  fetchRecipes() {
+      // we now return the observable so that the interested party can subscribe to it
+      // To use the setRecipes we need to specify the type of the response data received from our http:
+      return this.httpClient.get<Recipe[]>(
+            this.urlRecipes)
+      .pipe(
+      // make sure each recipe has an array of ingredients (possibly empty)
+      // we''ll map the response array to a new array
+      map(recipes => {
+          // now we use the map method of Javascript array to map each of its elements
+          return recipes.map(recipe => {
+            return {...recipe, ingredients: recipe.ingredients ? recipe.ingredients : []};
+          });
+       }),
+      // use the tap operator to set the recipes and allow the subscription to be made from the component
+      tap(response => this.recipesService.setRecipes(response))
+      );
+
+  }
+}
+```
+
+## Create the http interceptor
+
+```
+import { take, exhaustMap } from 'rxjs/operators';
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpParams, HttpRequest } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+import { User } from './user.model';
+
+
+/*
+  do not add it with providedIn='root' because we have to provide it so that Angular understands it
+*/
+@Injectable()
+export class AuthInterceptorService implements HttpInterceptor {
+
+  constructor(private authService: AuthService) {}
+
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
+    // we need to return an observable but this.suthService.user is also an observable so
+    // we use exhaustMap to convert complete the user observable and access it to create our
+    // new observable
+
+    return this.authService.user.pipe(
+      take(1),
+      exhaustMap((user: User | null) => {
+
+        if (user == null || user.token == null)
+          return next.handle(req); // use the default
+
+        // Clone the request and update it with the token
+
+        /*
+         If the token had to be added to the request parameters rather than the header
+        const updatedReq = req.clone({params: new HttpParams().set('auth', user!.token)});
+        */
+
+        const updatedReq = req.clone(
+          {
+            setHeaders: { 'Authorization': 'Bearer ' + user!.token }
+          });
+
+        /* or eqquivalently
+        const updatedReq = req.clone(
+          {
+            headers: req.headers.set('Authorization', 'Bearer ' + user!.token)
+          });
+        */
+
+          // in here we can return our new observable
+        return next.handle(updatedReq);
+      })
+    )
+
+  }
+
+}
+
+
+```
+
+## Register the http interceptor in the AppModule
+
+```
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+
+import { AppComponent } from './app.component';
+import { HeaderComponent } from './header/header.component';
+import { RecipesComponent } from './recipes/recipes.component';
+import { RecipeDetailComponent } from './recipes/recipe-detail/recipe-detail.component';
+import { RecipeListComponent } from './recipes/recipe-list/recipe-list.component';
+import { RecipeItemComponent } from './recipes/recipe-list/recipe-item/recipe-item.component';
+import { ShoppingListComponent } from './shopping-list/shopping-list.component';
+import { ShoppingEditComponent } from './shopping-list/shopping-edit/shopping-edit.component';
+import { DropdownDirective } from './shared/dropdown.directive';
+import { ShoppingListService } from './shopping-list/shopping-list.service';
+import { AppRoutingModule } from './app-routing.module';
+import { RecipeEditComponent } from './recipes/recipe-edit/recipe-edit.component';
+import { RecipesService } from './recipes/recipes.service';
+import { AuthComponent } from './auth/auth.component';
+import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
+import { AuthInterceptorService } from './auth/auth-interceptor.service';
+
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    RecipesComponent,
+    RecipeDetailComponent,
+    RecipeListComponent,
+    RecipeItemComponent,
+    RecipeEditComponent,
+    ShoppingListComponent,
+    ShoppingEditComponent,
+    DropdownDirective,
+    AuthComponent,
+    LoadingSpinnerComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    AppRoutingModule
+  ],
+  providers: [ShoppingListService, RecipesService,
+    // provide the httpInterceptor for all outgoing requests
+    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true}
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
