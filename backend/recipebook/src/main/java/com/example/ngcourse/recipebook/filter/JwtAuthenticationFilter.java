@@ -1,7 +1,8 @@
 package com.example.ngcourse.recipebook.filter;
 
-import com.example.ngcourse.recipebook.modele.dto.AuthenticationResponse;
+import com.example.ngcourse.recipebook.modele.dto.UserAuthenticationResponse;
 import com.example.ngcourse.recipebook.modele.dto.UserLogin;
+
 import com.example.ngcourse.recipebook.modele.entity.User;
 import com.example.ngcourse.recipebook.repository.UserRepository;
 import com.example.ngcourse.recipebook.service.security.JwtTokenService;
@@ -46,16 +47,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                           Authentication authResult) throws IOException, ServletException {
     UserDetails userDetails = (UserDetails) authResult.getPrincipal();
     response.setContentType("application/json");
-    String token = jwtTokenService.generateBearerToken(userDetails);
+    String token = jwtTokenService.generateToken(userDetails);
     String email = userDetails.getUsername();
 
     User user = this.userRepository.findByEmail(email);
 
     if (user != null) {
       user.setPassword(null);
-      AuthenticationResponse authenticationResponse =
-        new AuthenticationResponse(token, new UserLogin(email, null));
-      this.objectMapper.writeValue(response.getWriter(), authenticationResponse);
+      UserAuthenticationResponse userAuthenticationResponse =
+        new UserAuthenticationResponse(token, email, String.valueOf(user.getId()));
+      this.objectMapper.writeValue(response.getWriter(), userAuthenticationResponse);
       System.out.println(response.getWriter().toString());
     } else
       response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

@@ -4775,7 +4775,7 @@ export class AuthComponent {
 
 ## Adding a loading spinner
 
-Using google search for _css loading spinners_. You' ll find in the search result _loadin.io_ which is a page
+Using google search for _css loading spinners_. You' ll find in the search result _loading.io_ which is a page
 where you'll find lots of beautiful loading spinners. On that page we select a specific loading spinner and copy
 its css and template in our LoadingSpinnerComponent:
 
@@ -5006,3 +5006,197 @@ export class AuthComponent {
 
 ```
 
+# login requests
+
+We update the auth.response.data by adding the optional field _registered_ which is filled in in the response of the
+login request
+
+```
+export interface AuthResponseData {
+  kind: string;
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+  registered?: boolean; // make it optional with the ?
+}
+```
+
+We add the login request in the auth.service.ts. The request input data has the same structure as the one for signing up
+
+```
+  {
+    email: email,
+    password: password,
+    returnSecureToken: true
+  }
+```
+
+Our auth.servie.ts:
+```
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, throwError } from 'rxjs';
+import { AuthResponseData } from './auth.response.data';
+import { catchError } from 'rxjs/operators';
+
+
+
+@Injectable({providedIn: 'root'})
+export class AuthService {
+
+  private signupUrl = "http://localhost:8080/signup";
+  private loginUrl = "http://localhost:8080/connexion";
+
+  constructor(private httpClient: HttpClient) {}
+
+  signup(email: string, password: string): Observable<AuthResponseData> {
+    return this.httpClient.post<AuthResponseData>(this.signupUrl,
+      {
+        email: email,
+        password: password,
+        returnSecureToken: true
+      }
+    )
+    .pipe(
+      catchError(errorRes => {
+        /* here we have an HttpErrorResponse. If we console log it we'll get something like
+        HttpErrorResponse {
+            error: {
+              "type": "about:blank",
+              "title": "Bad Request",
+              "status": 400,
+              "detail": "user 'test@yahoo.fr' already exists",
+              "instance": "/signup"
+            },
+            headers: _HttpHeaders {normalizedNames: Map(0), lazyUpdate: null, lazyInit: ƒ},
+            message: "Http failure response for http://localhost:8080/signup: 400 OK",
+            name: "HttpErrorResponse",
+            ok: false,
+            status: 400,
+            statusText: "OK",
+            url: "http://localhost:8080/signup"
+         }
+        */
+
+         let errorMessage = "An unknown error occured";
+         if (!errorRes.error || !errorRes.error.detail) {
+          return throwError(errorMessage);
+         }
+
+         if (errorRes.error.instance == "/signup" && errorRes.error.status == 400) {
+            errorMessage = errorRes.error.detail;
+          }
+          return throwError(errorMessage);
+
+      })
+    )
+  }
+
+  login(email: string, password: string): Observable<AuthResponseData> {
+    return this.httpClient.post<AuthResponseData>(
+      this.loginUrl,
+      {
+        email: email,
+        password: password,
+        returnSecureToken: true
+      }
+    )
+  }
+}
+```
+
+The updated auth.component.ts file:
+```
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
+import { AuthResponseData } from './auth.response.data';
+
+@Component({
+  selector: 'app-auth',
+  templateUrl: './auth.component.html',
+  styleUrl: './auth.component.css'
+})
+export class AuthComponent {
+
+  loginMode = true;
+  loadingInProcess = false;
+  error: string | null = null;
+
+  constructor(private authService: AuthService) {}
+
+  onSwitchMode() {
+    this.loginMode = !this.loginMode;
+  }
+
+  onSubmit(authForm: NgForm) {
+
+    console.log(authForm.value);
+
+    if (! authForm.valid) return;
+
+    this.loadingInProcess = true;
+
+    const email = authForm.value.email;
+    const password = authForm.value.password;
+
+    let authObservable: Observable<AuthResponseData>;
+
+    if (this.loginMode)
+      authObservable = this.authService.login(email, password);
+    else
+      authObservable = this.authService.signup(email, password);
+
+
+    authObservable.subscribe(
+        responseData => {
+          console.log(responseData);
+          this.loadingInProcess = false;
+        },
+        /* Now in the service we extract the filter out the error message */
+        errorMessage => {
+          console.log(errorMessage);
+          this.error = errorMessage;
+          this.loadingInProcess = false;
+        }
+    );
+
+    authForm.reset();
+
+  }
+
+}
+```
+
+We can now test the application to see the response data when we login with the user _admin@gmail.com_ and password _password_. When we do this the console log displays:
+
+```
+{kind: 'identitytoolkit#SignupNewUserResponse', idToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb…TU1fQ.ipn-IVWF5Kr74prhxdrx2C97u0Hu_Wh7gm7JdAgxFVs', email: 'admin@gmail.com', refreshToken: 'not_used', expiresIn: 'not_used', …}
+email
+: 
+"admin@gmail.com"
+expiresIn
+: 
+"not_used"
+idToken
+: 
+"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlcyI6WyJST0xFX2FkbWluIiwiUk9MRV91c2VyIl0sImlhdCI6MTc1MTM1MjM1NSwiZXhwIjoxNzUxMzU1OTU1fQ.ipn-IVWF5Kr74prhxdrx2C97u0Hu_Wh7gm7JdAgxFVs"
+kind
+: 
+"identitytoolkit#SignupNewUserResponse"
+localId
+: 
+"1"
+refreshToken
+: 
+"not_used"
+registered
+: 
+true
+[[Prototype]]
+: 
+Object
+```

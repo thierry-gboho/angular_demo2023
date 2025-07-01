@@ -69,7 +69,7 @@ public class JwtTokenService {
       List<String> roles = new ArrayList<>();
       System.out.println("Step 3");
       for (Object s: claimsJws.getPayload().get("roles", List.class)) {
-        System.out.println("role: " + (String)s);
+        System.out.println("role: " + s);
         roles.add((String)s);
       }
 
@@ -87,9 +87,5 @@ public class JwtTokenService {
       System.out.println(e.getMessage());
       throw new MauvaisTokenException("Token invalide");
     }
-  }
-
-  public String generateBearerToken(UserDetails userDetails) {
-    return "Bearer " + this.generateToken(userDetails);
   }
 }

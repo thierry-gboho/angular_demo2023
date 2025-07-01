@@ -11,4 +11,5 @@ import java.io.Serializable;
 public class UserLogin implements Serializable {
   String email;
   String password;
+  private boolean returnSecureToken;
 }

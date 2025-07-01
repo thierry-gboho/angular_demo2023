@@ -39,7 +39,12 @@ curl -d '{ "email": "test@yahoo.com", "password": "pwd"}' -H "Content-Type: appl
 Response:
 
 ```
-{"kind":"identitytoolkit#SignupNewUserResponse","idToken":"not_used","email":"test@yahoo.com","refreshToken":"not_used","expiresIn":"not_used","localId":"7"}
+{"kind":"identitytoolkit#SignupNewUserResponse",
+"idToken":"not_used",
+"email":"test@yahoo.com",
+"refreshToken":"not_used",
+"expiresIn":"not_used",
+"localId":"7"}
 ```
 
 # Login
@@ -50,7 +55,13 @@ curl -d '{ "email": "admin@gmail.com", "password": "password"}' -H "Content-Type
 
 Response:
 ```
-{"token":"Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlcyI6WyJST0xFX2FkbWluIiwiUk9MRV91c2VyIl0sImlhdCI6MTc1MDAxMTE1MiwiZXhwIjoxNzUwMDE0NzUyfQ.vo6KuGPUsat14YnydGls3l3fsEf5uYFExdZevvbc6V8","user":{"email":"admin@gmail.com","password":null}}
+{"kind":"identitytoolkit#SignupNewUserResponse",
+"idToken":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJyb2xlcyI6WyJST0xFX2FkbWluIiwiUk9MRV91c2VyIl0sImlhdCI6MTc1MTM0ODUwOSwiZXhwIjoxNzUxMzUyMTA5fQ.APaRMHPLZh8a13IROxcQByyh9vQ9203vTURpxqECaaI",
+"email":"admin@gmail.com",
+"refreshToken":"not_used",
+"expiresIn":"not_used",
+"localId":"1",
+"registered":true}
 ```
 
 # save recipes

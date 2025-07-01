@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class UserSignupResponse implements Serializable {
 
   private String kind = "identitytoolkit#SignupNewUserResponse";
-  private String idToken = "not_used";
+  private String idToken = "not_used";    // The authentication token
   private String email;
   private String refreshToken = "not_used";
   private String expiresIn = "not_used";

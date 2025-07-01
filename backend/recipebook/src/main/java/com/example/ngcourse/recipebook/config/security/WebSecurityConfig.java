@@ -55,10 +55,10 @@ public class WebSecurityConfig {
       .addFilter(new JwtAuthorizationFilter(authenticationManager, jwtTokenService))
       .authorizeHttpRequests(
         (authz) -> authz
-          .requestMatchers("/connexion").permitAll()
           .requestMatchers(HttpMethod.GET, "/recipes").hasAnyRole(ROLE_USER)
           .requestMatchers(HttpMethod.POST, "/recipes").hasAnyRole(ROLE_USER)
           .requestMatchers(HttpMethod.POST, "/signup").permitAll()
+          .requestMatchers(HttpMethod.POST, "/connexion").permitAll()
           .requestMatchers(HttpMethod.GET, "/users").permitAll()
           .anyRequest().authenticated()
       )
