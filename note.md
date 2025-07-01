@@ -5383,3 +5383,119 @@ export class AuthService {
 }
 
 ```
+
+# Reflecting the Auth State in the UI
+
+## Redirecting the user to a new route when the user is authenticated
+
+We can do this in 2 different places:
+
+```
+We can do it in _handleAuthentication_ in the auth.service.ts file
+or in the auth.component.ts file inside of _subscribe_ in the success case
+```
+
+You may argue that you want to keep your service cleaner and don't directly influence with the _UI_ inside that
+service (i.e. you do not want to interract with the router in the service)
+We shall adopt this approach and therefore redirect the authenticated user to a new route inside the aut.component.ts file
+
+## Reflecting the Auth state in the UI 
+
+When the user is authenticate, the header.component.html should reflect it:
+1. when the user is not authenticated he should not have access to the link _recipes_
+2. when the user is authenticated, the link _authenticate_ is no longer necessary
+
+We update our headerComponent as follows:
+
+```
+import { Subscription } from 'rxjs';
+import { AuthService } from './../auth/auth.service';
+import { DataStorageService } from './../shared/data-storage.service';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from "@angular/core";
+
+@Component({
+    selector: 'app-header',
+    templateUrl: './header.component.html'
+})
+export class HeaderComponent implements OnInit, OnDestroy {
+
+  @Output()
+  featureSelected = new EventEmitter<string>();
+
+  private userSubscription!: Subscription;
+  authenticated = false;
+
+  constructor(private dataStorageService: DataStorageService, private authService: AuthService) {}
+  onSelect(feature: string): void {
+    this.featureSelected.emit(feature);
+  }
+
+  ngOnInit(): void {
+    this.userSubscription = this.authService.user.subscribe(
+      user => {
+        /*
+        if  the user is null he is not authenticated:
+        we use the contracted form
+            this.authenticated = !!user;
+          which is equivalent to
+            this.authenticated = !user ? false : true;
+        */
+       this.authenticated = !!user;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription.unsubscribe();
+  }
+
+  onSaveData() {
+    this.dataStorageService.storeRecipes();
+  }
+
+  onFetchData() {
+    this.dataStorageService.fetchRecipes().subscribe();
+  }
+
+}
+```
+
+```
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">Recipe Book</a>
+        </div>
+
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                 <!-- disable this link if we are not logged in -->
+                <li routerLinkActive="active" *ngIf="authenticated">
+                  <a routerLink="/recipes" style="cursor: pointer;">Recipes</a></li>
+
+                <li routerLinkActive="active"><a routerLink="/shopping-list" style="cursor: pointer;">Shopping List</a></li>
+
+                 <!-- disable this link if we are logged in -->
+                <li routerLinkActive="active" *ngIf="!authenticated">
+                  <a routerLink="/auth" style="cursor: pointer;">Authenticate</a></li>
+              </ul>
+            <ul class="nav navbar-nav navbar-right">
+               <!-- add a logout button  which is disabled is we are not logged in -->
+              <li *ngIf="authenticated">
+                <a style="cursor: pointer;">Logout</a>
+              </li>
+                <!-- disable the dropdown if we are not logged in -->
+                <li class="dropdown" appDropdown *ngIf="authenticated">
+                    <a style="cursor: pointer;" class="dopdown-toggle" role="button">Manage <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a style="cursor: pointer;" (click)="onSaveData()">Save Data</a></li>
+                        <li><a style="cursor: pointer;" (click)="onFetchData()">Fetch Data</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+
+
