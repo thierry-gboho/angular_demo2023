@@ -14,6 +14,10 @@ export class AuthService {
   private signupUrl = "http://localhost:8080/signup";
   private loginUrl = "http://localhost:8080/connexion";
 
+  // store the token expiration timer in a variable so that we can clear the timer when the user
+  // manually logs out
+  tokenExpirationTimer: any;
+
   // store the user in a subject
   // user = new Subject<User>();
   user = new BehaviorSubject<User | null>(null);  // it needs to be initialized with the first inital value
@@ -90,6 +94,7 @@ export class AuthService {
 
         // store the user data using our subject
         this.user.next(user);
+        this.autoLogout(expiresIn * 1000);
 
         // store the user in our localStorage as a json string
         localStorage.setItem('userData', JSON.stringify(user));
@@ -126,12 +131,38 @@ export class AuthService {
     *    return this._token;
     * }
     */
-    if (loadedUser.token)
+    if (loadedUser.token) {
       this.user.next(loadedUser);
+
+      const expirationDurationInMilliseconds = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime();
+      this.autoLogout(expirationDurationInMilliseconds);
+    }
   }
 
   logout() {
     this.user.next(null);
     this.router.navigate(['/auth']);
+
+    // clear the data from the localStorage when the user logs out
+    localStorage.removeItem('userData');
+
+    // clear/stop the token expiration timer
+    if (this.tokenExpirationTimer) {
+      clearTimeout(this.tokenExpirationTimer);
+      this.tokenExpirationTimer = null;
+    }
+
+  }
+
+  /*
+  * autoLogout need to be called whenever  we authenticate a user. That is
+  * 1. in the handleAuthentication in auth.service.ts
+  * 2.in autoLogin
+  */
+  autoLogout(expirationDurationInMilliseconds: number) {
+    this.tokenExpirationTimer = setTimeout(() => {
+      this.logout();
+    }, expirationDurationInMilliseconds);
+
   }
 }
