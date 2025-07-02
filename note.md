@@ -6679,3 +6679,8 @@ export class AuthGuard implements CanActivate {
 
 }
 ```
+
+_Note:_
+This version works for this application but in some edge cases, it may lead to race conditions with multiple redirects which interfere with each other. For this reason it's better to use version 2 which we'll cover next
+
+
