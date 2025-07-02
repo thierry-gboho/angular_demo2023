@@ -6311,16 +6311,19 @@ export class AuthService {
         // store the user data using our subject
         this.user.next(user);
 
-        // store the user in our localStorage
+        // store the user in our localStorage as a json string
         localStorage.setItem('userData', JSON.stringify(user));
 
   }
 
   autoLogin() {
-    // retrieve the user from the localStorage
+    // retrieve the user (as a json string) from the localStorage
     const userDataJson = localStorage.getItem('userData');
     if (!userDataJson) return;
 
+    /*
+    * JSON.parse(jsonString) convert the jsonString to a plain javascript object
+    */
     const userData: {
       email: string,
       id: string,
@@ -6329,8 +6332,20 @@ export class AuthService {
 
     } = JSON.parse(userDataJson);
 
+    // convert the plain javascript object to a User instance
     const loadedUser = new User(userData.email, userData.id, userData._token, new Date(userData._tokenExpirationDate));
 
+    /*
+    * loadedUser.token checks if the user found in the localStorage has a token and if it's still valid
+    * as _token_ is a getter method of the User class defined by:
+    *
+    * get token() {
+    *   if (!this._tokenExpirationDate || new Date() > this._tokenExpirationDate)
+    *      return null;
+    *
+    *    return this._token;
+    * }
+    */
     if (loadedUser.token)
       this.user.next(loadedUser);
   }
@@ -6356,6 +6371,7 @@ export class AppComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
+    // if we retrieve the last user in the localStorage with a valid token we login automatically
     this.authService.autoLogin();
   }
 }

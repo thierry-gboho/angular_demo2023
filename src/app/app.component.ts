@@ -11,6 +11,7 @@ export class AppComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
+    // if we retrieve the last user in the localStorage with a valid token we login automatically
     this.authService.autoLogin();
   }
 }
