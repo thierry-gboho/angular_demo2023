@@ -91,7 +91,28 @@ export class AuthService {
         // store the user data using our subject
         this.user.next(user);
 
+        // store the user in our localStorage
+        localStorage.setItem('userData', JSON.stringify(user));
 
+  }
+
+  autoLogin() {
+    // retrieve the user from the localStorage
+    const userDataJson = localStorage.getItem('userData');
+    if (!userDataJson) return;
+
+    const userData: {
+      email: string,
+      id: string,
+      _token: string,
+      _tokenExpirationDate: string
+
+    } = JSON.parse(userDataJson);
+
+    const loadedUser = new User(userData.email, userData.id, userData._token, new Date(userData._tokenExpirationDate));
+
+    if (loadedUser.token)
+      this.user.next(loadedUser);
   }
 
   logout() {
