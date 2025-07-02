@@ -1,0 +1,29 @@
+.inline-block-right {
+  display: inline-block;
+  text-align: right;
+}
+
+.width-150 {
+  width: 150px;
+}
+.right-border {
+  border-right: 1px solid black;
+}
+.right-space::after {
+  content: "\00a0";
+}
+.left-space::before {
+  content: "\00a0";
+}
+.left-border {
+  border-left: 1px solid black;
+}
+
+.btn-shape-s1 {
+  padding-left: 1px;
+  padding-right: 1px;
+  border-radius: 5px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
