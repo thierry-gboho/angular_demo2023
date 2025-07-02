@@ -63,20 +63,22 @@ export class AuthService {
   }
 
   private handleError(errorRes: HttpErrorResponse) {
-      let errorMessage = "An unknown error occured";
+
         if (!errorRes.error || !errorRes.error.detail) {
-          return throwError(errorMessage);
+          if (errorRes.status == 403 && errorRes.url?.endsWith("/connexion"))
+            return throwError("This user or password is not correct");
+          else
+            return throwError("An unknown error occured");
         }
 
         if (errorRes.error.status == 400) {
-          if (errorRes.error.instance == "/signup") {
-              errorMessage = errorRes.error.detail;
-          }
-          if (errorRes.error.instance == "/connexion") {
-              errorMessage = errorRes.error.detail;
-          }
+          if (errorRes.error.instance == "/signup")
+            return throwError(errorRes.error.detail);
+
+          if (errorRes.error.instance == "/connexion")
+            return throwError(errorRes.error.detail);
         }
-        return throwError(errorMessage);
+        return throwError("An unknown error occured");
   }
 
   // Redirection to a new route once the user is authenticated can be done here in handleAuthentication

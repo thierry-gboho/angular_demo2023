@@ -62,4 +62,8 @@ export class AuthComponent {
 
   }
 
+  closeAlert() {
+    this.error = null;
+  }
+
 }
