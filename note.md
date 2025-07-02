@@ -6717,3 +6717,47 @@ export class AuthGuard implements CanActivate {
 
 }
 ```
+
+### redirecting to _auth_ if the user is not authenticated: version 3
+
+In the previous version of AuthGuard we are 
+1. subscribing to the user
+2. mapping our user value to true if is authenticated else to a UrlTree for redirection
+
+The one issue we have with that version is that we are setting up an ongoing subscription. The user Subject can of course
+emit datak more than once and we don't want that here: This could lead to strange side effeccts if our guard keeps listening to
+that subject. Instead we want to look into the user value only once and not care about it anymore unless we run the guard again. As a result
+we should use _take(1)_ to make sure we take the latest user value and then automatically unsubscribe for this guard execution
+
+Our updated AuthGuard is then:
+```
+import { AuthService } from './auth.service';
+import { Injectable } from "@angular/core";
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
+import { Observable } from "rxjs";
+import { map, take } from 'rxjs/operators';
+
+@Injectable({providedIn: 'root'})
+export class AuthGuard implements CanActivate {
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot):
+    Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    return this.authService.user.pipe(
+      take(1),
+      map(user => {
+        // convert user to a true if it is not null else to false
+        const isAuth = !!user;
+        if (isAuth)
+          return true;
+
+
+        // otherwise return a UrlTree to redirect to /auth
+        return this.router.createUrlTree(['/auth']);
+      })
+    )
+  }
+
+}
+```
