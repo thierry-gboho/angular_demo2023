@@ -6683,4 +6683,37 @@ export class AuthGuard implements CanActivate {
 _Note:_
 This version works for this application but in some edge cases, it may lead to race conditions with multiple redirects which interfere with each other. For this reason it's better to use version 2 which we'll cover next
 
+### redirecting to _auth_ if the user is not authenticated: version 2
 
+we return a _UrlTree_ in our guard to specify the :
+
+```
+import { AuthService } from './auth.service';
+import { Injectable } from "@angular/core";
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
+import { Observable } from "rxjs";
+import { map, tap } from 'rxjs/operators';
+
+@Injectable({providedIn: 'root'})
+export class AuthGuard implements CanActivate {
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot):
+    Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    return this.authService.user.pipe(
+      map(user => {
+        // convert user to a true if it is not null else to false
+        const isAuth = !!user;
+        if (isAuth)
+          return true;
+
+
+        // otherwise return a UrlTree to redirect to /auth
+        return this.router.createUrlTree(['/auth']);
+      })
+    )
+  }
+
+}
+```
