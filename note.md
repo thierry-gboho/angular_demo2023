@@ -483,3 +483,72 @@ export const counterReducer = createReducer(
 );
 
 ```
+
+## Dispatching actions
+
+we now update the counter-controls.component.ts to use the _store_ rather than a service so that it dispatches the right action to increment/decrement the counter data in the store
+
+1. the _counter-controls.component.ts_: previous version using a service
+
+```
+import { Component } from '@angular/core';
+
+import { CounterService } from '../counter.service';
+
+@Component({
+  selector: 'app-counter-controls',
+  templateUrl: './counter-controls.component.html',
+  styleUrls: ['./counter-controls.component.css'],
+  standalone: false,
+})
+export class CounterControlsComponent {
+  constructor(private counterService: CounterService) {}
+
+  increment() {
+    this.counterService.increment();
+  }
+
+  decrement() {
+    this.counterService.decrement();
+  }
+}
+```
+
+2. the _counter-controls.component.ts_: dispatching the increment action
+
+```
+import { Component } from '@angular/core';
+import { Store } from '@ngrx/store';
+
+import { increment } from '../store/counter.actions';
+
+@Component({
+  selector: 'app-counter-controls',
+  templateUrl: './counter-controls.component.html',
+  styleUrls: ['./counter-controls.component.css'],
+  standalone: false,
+})
+export class CounterControlsComponent {
+  constructor(private store: Store) {}
+
+  increment() {
+    /*
+    * Dispatch the increment action defined in ../store/counter.actions
+    * Notice that an action is actually a function and the dispatch method
+    * takes as argument the executed function:
+    * We DO NOT write
+    *         this.store.dispatch(increment);
+    * but
+    *         this.store.dispatch(increment());
+    *
+    * so that it is executed when dispatching
+    */
+    this.store.dispatch(increment());
+  }
+
+  decrement() {
+
+  }
+}
+```
+
