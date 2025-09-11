@@ -425,7 +425,61 @@ _counter-output.component.html_
 ```
 
 
+## Creating an action and making a reducer listen to that action
+
+### Creating the action _increment_
+
+```
+/*
+* Define the actions that can be dispatched
+*/
+
+import { createAction } from "@ngrx/store";
+
+/**
+ * createAction requires at least one argument which is a unique identifier
+ * for your action.
+ * By convention this identifier is prefixed with [Key]. For exemple
+ * with the key Counter and identifier description Increment we use as unique identifier
+ * '[Counter] Increment'
+ *
+ * Now it's the reducer which should listen to the action so we have to update
+ * our counterReducer action to listen to our action (see counter.reducer.ts)
+ */
+export const increment = createAction(
+  '[Counter] Increment'
+);
+```
+
+### Making the reducer _counterReducer_ listen to any _dispatch_ of the action _increment_
+
+```
+import { createReducer, on } from "@ngrx/store";
+import { increment } from "./counter.actions";
+
+/*
+* The initial state can be a boolean, a number, an object etc...
+* For our counter our initial state is the number 0
+*/
+const initialState = 0;
 
 
+/*
+* A reducer is created with at least one parameter: the initial state
+*
+* We pass a second argument to createReducer to make it listen to an action
+* This second argument uses the on(action, updateLogicArrowFunction) method
+*/
+export const counterReducer = createReducer(
+  initialState,
+  on(increment, (state) => {
+    /*
+    * the logic that updates the state is defined here
+    * NOTE: You should not directly mutate a state if it is an object or an array
+    * but create a new one
+    */
+    return state + 1;
+  })
+);
 
-
+```
