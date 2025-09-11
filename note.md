@@ -97,3 +97,92 @@ export class AppModule {}
 ### Note
 
 _StoreModule.forRoot({}, {})_ is the line of code that's responsible for setting up a _store_ in the application.
+
+## Adding a first reducer and store setup
+
+#### Introduction
+
+To get data into the store we need a reducer because _reducers_ are the things that change data in the store
+
+```
+A reducer is used to set up initial data in the store and potentially change it over time
+```
+
+#### Adding a directory store to the application
+
+We create the _app/store_ direcctory where we'll keep NgRx specific files 
+
+#### Create a first reducer _app/store/counter.reducer.ts_
+
+```
+import { createReducer } from "@ngrx/store";
+
+/* 
+* The initial state can be a boolean, a number, an object etc...
+* For our counter our initial state is the number 0
+*/
+const initialState = 0;
+
+/*
+* A reducer is created with at least one parameter: the initial state
+* Here we create a simple reducer for our counter.
+* It's not too useful yet because it does not contain the logic to modify
+* our state (i.e. the logic to increment our counter)
+*/
+export const counterReducer = createReducer(
+  initialState
+);
+```
+
+#### Connect the reducer to our store
+
+We connect the reducer to our store by modifying the store setup (i.e. the line _StoreModule.forRoot({}, {})_) in our app.module.ts
+
+The _StoreModule.forRoot({}, {})_ takes in as first parameter an _object_ that associates a _key_ of your choice to the corresponding _reducer_
+
+
+```
+import { CounterControlsComponent } from './counter-controls/counter-controls.component';
+import { StoreModule } from '@ngrx/store';
+import { counterReducer } from './store/counter.reducer';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    CounterOutputComponent,
+    CounterControlsComponent,
+  ],
+  imports: [BrowserModule, StoreModule.forRoot({
+    counter: counterReducer
+  }, {})],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
+
+If we had another reducer, say _authReducer_ we'd connect it to the store using a key like _auth_:
+
+```
+import { CounterControlsComponent } from './counter-controls/counter-controls.component';
+import { StoreModule } from '@ngrx/store';
+import { counterReducer } from './store/counter.reducer';
+import { authReducer } from './store/auth.reducer';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    CounterOutputComponent,
+    CounterControlsComponent,
+  ],
+  imports: [BrowserModule, StoreModule.forRoot({
+    counter: counterReducer,
+    auth: authReducer
+  }, {})],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
+
+
