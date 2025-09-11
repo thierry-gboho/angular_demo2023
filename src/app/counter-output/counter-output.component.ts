@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 
-import { CounterService } from '../counter.service';
+import { Store } from '@ngrx/store';
 
 @Component({
   standalone: false,
@@ -9,21 +9,19 @@ import { CounterService } from '../counter.service';
   templateUrl: './counter-output.component.html',
   styleUrls: ['./counter-output.component.css']
 })
-export class CounterOutputComponent implements OnInit, OnDestroy {
-  counter = 0;
-  counterServiceSub?: Subscription;
+export class CounterOutputComponent {
+  count$: Observable<number>;
 
-  constructor(private counterService: CounterService) {}
-
-  ngOnInit(): void {
-    this.counterServiceSub = this.counterService.counterChanged.subscribe(
-      (newVal) => (this.counter = newVal)
-    );
+  /*
+  * Instead of subscribing to this observable explicitly and then
+  * unsubscribing from it in the ngOnDestroy we'll use the async pipe
+  * in the html which will automatically do the subscribing and unsubscribing
+  * for us
+  *
+  */
+  constructor(private store: Store<{counter: number}>) {
+    this.count$ = store.select('counter');
   }
 
-  ngOnDestroy(): void {
-    if (this.counterServiceSub) {
-      this.counterServiceSub.unsubscribe();
-    }
-  }
+
 }
