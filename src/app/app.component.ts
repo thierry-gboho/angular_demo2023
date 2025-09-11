@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+
+import { CounterOutputComponent } from './counter-output/counter-output.component';
+import { CounterControlsComponent } from './counter-controls/counter-controls.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css'],
+  standalone: true,
+  imports: [CounterOutputComponent, CounterControlsComponent],
 })
-export class AppComponent {
-  title = 'angular_demo2023_standalone';
-}
+export class AppComponent {}
