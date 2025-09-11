@@ -1,29 +1,30 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 
-import { CounterService } from '../counter.service';
+import { Store } from '@ngrx/store';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-counter-output',
   templateUrl: './counter-output.component.html',
   styleUrls: ['./counter-output.component.css'],
   standalone: true,
+  imports: [AsyncPipe]
 })
-export class CounterOutputComponent implements OnInit, OnDestroy {
-  counter = 0;
-  counterServiceSub?: Subscription;
+export class CounterOutputComponent {
+  count$: Observable<number>;
 
-  constructor(private counterService: CounterService) {}
-
-  ngOnInit(): void {
-    this.counterServiceSub = this.counterService.counterChanged.subscribe(
-      (newVal) => (this.counter = newVal)
-    );
-  }
-
-  ngOnDestroy(): void {
-    if (this.counterServiceSub) {
-      this.counterServiceSub.unsubscribe();
-    }
+  /*
+  * Instead of subscribing to this observable explicitly and then
+  * unsubscribing from it in the ngOnDestroy we'll use the async pipe
+  * in the html which will automatically do the subscribing and unsubscribing
+  * for us
+  *
+  * Notice that to be able to use the async pipe we had to add
+  * the AsyncPipe in the imports array as
+  * we are using standalone component
+  */
+  constructor(private store: Store<{counter: number}>) {
+    this.count$ = store.select('counter');
   }
 }

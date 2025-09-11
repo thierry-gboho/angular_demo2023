@@ -231,3 +231,169 @@ export function counterReducerV2(state = initialState) {
   return state;
 }
 ```
+
+## Reading data from the store
+
+We've added to our store a _counter_ key which is associated with the _counterReducerV2_. 
+
+Our current _main.ts_ looks like:
+
+```
+import { bootstrapApplication } from '@angular/platform-browser';
+
+import { AppComponent } from './app/app.component';
+import { provideStore } from '@ngrx/store';
+import { counterReducerV2 } from './app/store/counter.reducer';
+
+bootstrapApplication(AppComponent, {
+    providers: [provideStore({
+      counter: counterReducerV2
+    })]
+});
+```
+
+and our _counterReducerV2_ is defined as:
+
+```
+/*
+* The initial state can be a boolean, a number, an object etc...
+* For our counter our initial state is the number 0
+*/
+const initialState = 0;
+
+/*
+*
+* Here we create a simple reducer for our counter.
+* It's not too useful yet because it does not contain the logic to modify
+* our state (i.e. the logic to increment our counter)
+*
+*/
+
+
+/*
+* To create a reducer is to define a function
+* which takes as first parameter the current state and returns the updated state
+* 1. This approach works in all versions of NgRx
+* 2. we set the default value of the state to be the initial state as the first
+*    time this function is called there is no state. As a result, the first time
+*    this function is called it returns the initial state
+*/
+export function counterReducerV2(state = initialState) {
+  return state;
+}
+
+```
+
+### Injecting the store in a component
+
+As the state managed by the _counterReducerV2_ is a number (which currently is always 0), the store
+current state type is an object containing a key _counter_ to which a _number_ is associated. In other words our store state type (also called feature state) is _{counter: number}_
+
+For a component to read data from the store we inject the store in our component which is of type 
+Store<FeatureState>. That is we inject a _store_ of type:
+
+```
+Store<{counter: number}>
+```
+
+### Reading from the store
+
+We use the _store.select(key)_ to read the current data associated with the reducer whose key is provided. In our case we have only one key: 'counter' so that we read the counter data using
+
+```
+store.select('counter')
+```
+
+The select method returns an observable and as the data associated with the counterReducerV2 is of type number the _store.select('counter')_ returns an _Observable<number>_
+
+### Exemple: using the store instead of a service for the counter
+
+1. the counter-output.component: previous version using a service
+
+
+_counter-output.component.ts_
+```
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+
+import { CounterService } from '../counter.service';
+
+@Component({
+  standalone: true,
+  selector: 'app-counter-output',
+  templateUrl: './counter-output.component.html',
+  styleUrls: ['./counter-output.component.css']
+})
+export class CounterOutputComponent implements OnInit, OnDestroy {
+  counter = 0;
+  counterServiceSub?: Subscription;
+
+  constructor(private counterService: CounterService) {}
+
+  ngOnInit(): void {
+    this.counterServiceSub = this.counterService.counterChanged.subscribe(
+      (newVal) => (this.counter = newVal)
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.counterServiceSub) {
+      this.counterServiceSub.unsubscribe();
+    }
+  }
+}
+```
+
+_counter-output.component.html_
+
+```
+<p class="counter">{{ counter }}</p>
+<p class="counter">Double: {{ counter * 2 }}</p>
+```
+
+2. the counter-output.component: new version using the store
+
+_counter-output.component.ts_
+```
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { Store } from '@ngrx/store';
+import { AsyncPipe } from '@angular/common';
+
+@Component({
+  selector: 'app-counter-output',
+  templateUrl: './counter-output.component.html',
+  styleUrls: ['./counter-output.component.css'],
+  standalone: true,
+  imports: [AsyncPipe]
+})
+export class CounterOutputComponent {
+  count$: Observable<number>;
+
+  /*
+  * Instead of subscribing to this observable explicitly and then
+  * unsubscribing from it in the ngOnDestroy we'll use the async pipe
+  * in the html which will automatically do the subscribing and unsubscribing
+  * for us
+  *
+  * Notice that to be able to use the async pipe we had to add 
+  * the AsyncPipe in the imports array as
+  * we are using standalone component
+  */
+  constructor(private store: Store<{counter: number}>) {
+    this.count$ = store.select('counter');
+  }
+}
+
+```
+
+_counter-output.component.html_
+
+```
+<p class="counter">{{ count$ | async}}</p>
+<p class="counter">Double: TO BE FIXED LATER</p>
+```
+
+
+
