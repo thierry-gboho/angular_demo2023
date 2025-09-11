@@ -163,3 +163,71 @@ bootstrapApplication(AppComponent, {
 ```
 
 
+## An alternative way of creating a reducer
+
+As we saw, creating a reducer is quite simple. You just have to execute the _createReducer()_ function which is provided by NgRx store:
+
+```
+import { createReducer } from "@ngrx/store";
+
+/*
+* The initial state can be a boolean, a number, an object etc...
+* For our counter our initial state is the number 0
+*/
+const initialState = 0;
+
+/*
+* A reducer is created with at least one parameter: the initial state
+* Here we create a simple reducer for our counter.
+* It's not too useful yet because it does not contain the logic to modify
+* our state (i.e. the logic to increment our counter)
+*/
+export const counterReducer = createReducer(
+  initialState
+);
+```
+
+Now it can be interesting to take a look under the hood of what _createReducer()_ to see what's really happening and how we can create a reducer in _older version of NgRx where createReducer() is not provided_.
+
+In this alternative approach you create your reducer manually by defining a function that takes in a first parameter the _current state_ and returns the _updated state_
+
+```
+import { createReducer } from "@ngrx/store";
+
+/*
+* The initial state can be a boolean, a number, an object etc...
+* For our counter our initial state is the number 0
+*/
+const initialState = 0;
+
+/*
+*
+* Here we create a simple reducer for our counter.
+* It's not too useful yet because it does not contain the logic to modify
+* our state (i.e. the logic to increment our counter)
+*
+* counterReducer and counterReducerV2 are identical and for now look quite similar
+* but we'll see some difference later when we'll start adding some logic to the
+* reducer
+*/
+
+/*
+* A reducer is created with at least one parameter: the initial state
+*/
+export const counterReducer = createReducer(
+  initialState
+);
+
+
+/*
+* The alternative approach to create a reducer is to define a function
+* which takes as first parameter the current state and returns the updated state
+* 1. This approach works in all versions of NgRx
+* 2. we set the default value of the state to be the initial state as the first
+*    time this function is called there is no state. As a result, the first time
+*    this function is called it returns the initial state
+*/
+export function counterReducerV2(state = initialState) {
+  return state;
+}
+```
